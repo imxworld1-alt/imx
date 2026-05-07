@@ -1,0 +1,1435 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>IMX World — Admin Panel</title>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:ital,wght@0,300;0,400;0,500;1,300&display=swap" rel="stylesheet">
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+:root {
+  --gold: #D4A017;
+  --gold-light: #F5C842;
+  --green: #1DB954;
+  --red: #FF5050;
+  --blue: #0088cc;
+  --tg: #2CA5E0;
+  --bg: #080808;
+  --surface: #111111;
+  --surface2: #181818;
+  --surface3: #222222;
+  --border: rgba(255,255,255,0.07);
+  --border-gold: rgba(212,160,23,0.25);
+  --text: #F0EDE6;
+  --muted: #666;
+  --muted2: #444;
+}
+html, body {
+  min-height: 100%;
+  font-family: 'DM Sans', sans-serif;
+  background: var(--bg);
+  color: var(--text);
+  -webkit-tap-highlight-color: transparent;
+}
+h1,h2,h3,h4,h5 { font-family: 'Syne', sans-serif; }
+
+/* ── LOGIN ─────────────────────────────────────── */
+#login-screen {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 100vh;
+  padding: 40px 24px;
+  background: radial-gradient(ellipse at 50% 0%, rgba(212,160,23,0.08) 0%, transparent 60%), var(--bg);
+}
+.login-logo { font-family:'Syne',sans-serif; font-size:34px; font-weight:800; margin-bottom:4px; }
+.login-logo span { color: var(--gold-light); }
+.login-sub { font-size:11px; color:var(--muted); letter-spacing:2px; text-transform:uppercase; margin-bottom:40px; }
+.login-card {
+  width: 100%;
+  max-width: 380px;
+  background: var(--surface);
+  border: 1px solid var(--border-gold);
+  border-radius: 24px;
+  padding: 32px 28px;
+}
+.login-card h2 { font-size:20px; margin-bottom:6px; }
+.login-card p { font-size:13px; color:var(--muted); margin-bottom:22px; line-height:1.5; }
+.inp {
+  width: 100%;
+  background: var(--surface2);
+  border: 1px solid var(--border);
+  color: var(--text);
+  padding: 14px 16px;
+  border-radius: 12px;
+  font-size: 15px;
+  font-family: 'DM Sans', sans-serif;
+  outline: none;
+  margin-bottom: 14px;
+  transition: border-color 0.2s;
+}
+.inp:focus { border-color: rgba(212,160,23,0.5); }
+.login-btn {
+  width: 100%;
+  background: var(--gold);
+  color: #000;
+  font-family: 'Syne', sans-serif;
+  font-weight: 800;
+  font-size: 15px;
+  border: none;
+  padding: 16px;
+  border-radius: 12px;
+  cursor: pointer;
+  transition: background 0.2s;
+  letter-spacing: 0.2px;
+}
+.login-btn:hover { background: var(--gold-light); }
+.login-err { font-size:12px; color:var(--red); margin-top:12px; text-align:center; display:none; padding:10px; background:rgba(255,80,80,0.07); border-radius:8px; border:1px solid rgba(255,80,80,0.15); }
+.login-note { font-size:11px; color:var(--muted2); text-align:center; margin-top:14px; line-height:1.6; }
+
+/* ── DASHBOARD ──────────────────────────────────── */
+#dashboard { display: none; }
+
+.topbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 18px 24px;
+  background: rgba(8,8,8,0.97);
+  border-bottom: 1px solid var(--border);
+  position: sticky;
+  top: 0;
+  z-index: 100;
+  backdrop-filter: blur(20px);
+}
+.topbar-logo { font-family:'Syne',sans-serif; font-size:20px; font-weight:800; }
+.topbar-logo span { color: var(--gold-light); }
+.topbar-badge { font-size:10px; background:#1a1a1a; border:1px solid var(--border); border-radius:100px; padding:3px 10px; color:var(--muted); margin-left:8px; vertical-align:middle; font-weight:600; letter-spacing:0.5px; }
+.topbar-right { display:flex; align-items:center; gap:10px; }
+.refresh-all-btn { background:rgba(212,160,23,0.1); border:1px solid var(--border-gold); color:var(--gold); font-size:12px; font-weight:600; padding:7px 14px; border-radius:100px; cursor:pointer; font-family:'Syne',sans-serif; transition:all 0.2s; }
+.refresh-all-btn:hover { background:rgba(212,160,23,0.2); }
+.logout-btn { background:rgba(255,80,80,0.08); border:1px solid rgba(255,80,80,0.18); color:var(--red); font-size:12px; font-weight:600; padding:7px 14px; border-radius:100px; cursor:pointer; font-family:'Syne',sans-serif; transition:all 0.2s; }
+.logout-btn:hover { background:rgba(255,80,80,0.16); }
+
+/* Stats */
+.stats-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 10px;
+  padding: 20px 20px 0;
+  max-width: 960px;
+  margin: 0 auto;
+}
+@media(min-width:600px){ .stats-grid { grid-template-columns: repeat(4,1fr); } }
+.stat-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  padding: 18px 16px;
+  position: relative;
+  overflow: hidden;
+}
+.stat-card::before { content:''; position:absolute; top:-20px; right:-20px; width:80px; height:80px; border-radius:50%; opacity:0.06; }
+.stat-card.gold::before { background:var(--gold); }
+.stat-card.green::before { background:var(--green); }
+.stat-card.red::before { background:var(--red); }
+.stat-card.blue::before { background:var(--blue); }
+.stat-val { font-family:'Syne',sans-serif; font-size:30px; font-weight:800; line-height:1; margin-bottom:4px; }
+.stat-card.gold .stat-val { color:var(--gold-light); }
+.stat-card.green .stat-val { color:var(--green); }
+.stat-card.red .stat-val { color:#FF7070; }
+.stat-card.blue .stat-val { color:#4CB8FF; }
+.stat-lbl { font-size:11px; color:var(--muted); letter-spacing:0.5px; }
+.stat-sub { font-size:10px; color:var(--muted2); margin-top:2px; }
+
+/* Tabs */
+.tabs-wrap { padding: 16px 20px 0; max-width:960px; margin:0 auto; overflow-x:auto; scrollbar-width:none; }
+.tabs-wrap::-webkit-scrollbar { display:none; }
+.tabs { display:flex; gap:6px; min-width:max-content; }
+.tab-btn {
+  padding: 10px 18px;
+  font-family: 'Syne', sans-serif;
+  font-size: 12px;
+  font-weight: 700;
+  border: 1px solid var(--border);
+  background: var(--surface);
+  color: var(--muted);
+  border-radius: 100px;
+  cursor: pointer;
+  transition: all 0.2s;
+  white-space: nowrap;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+.tab-btn:hover { border-color: rgba(212,160,23,0.3); color: var(--text); }
+.tab-btn.active { background: var(--gold); color: #000; border-color: var(--gold); }
+.tab-badge { background: var(--red); color: #fff; font-size:9px; font-weight:700; padding:1px 6px; border-radius:100px; }
+.tab-btn.active .tab-badge { background:#000; color:#fff; }
+
+/* Content area */
+.content { max-width:960px; margin:0 auto; padding:16px 20px 80px; }
+.section { display:none; }
+.section.active { display:block; }
+
+/* Section header */
+.sec-hd { display:flex; align-items:center; justify-content:space-between; margin-bottom:14px; margin-top:4px; }
+.sec-title { font-family:'Syne',sans-serif; font-size:11px; font-weight:700; color:var(--muted); letter-spacing:1.5px; text-transform:uppercase; }
+.sec-refresh { background:none; border:none; color:var(--gold); font-size:12px; cursor:pointer; font-family:'DM Sans',sans-serif; display:flex; align-items:center; gap:4px; }
+.sec-filter { display:flex; gap:6px; flex-wrap:wrap; margin-bottom:12px; }
+.filter-btn { padding:6px 14px; font-size:11px; font-weight:600; border:1px solid var(--border); background:var(--surface); color:var(--muted); border-radius:100px; cursor:pointer; font-family:'Syne',sans-serif; transition:all 0.2s; }
+.filter-btn.active { border-color:var(--gold); color:var(--gold); background:rgba(212,160,23,0.08); }
+
+/* Cards */
+.card-list { display:flex; flex-direction:column; gap:8px; }
+.item-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  overflow: hidden;
+  transition: border-color 0.2s;
+}
+.item-card:hover { border-color: rgba(255,255,255,0.12); }
+.item-card.pending { border-left: 3px solid var(--gold); }
+.item-card.approved { border-left: 3px solid var(--green); }
+.item-card.rejected { border-left: 3px solid var(--red); }
+.item-card.sent { border-left: 3px solid var(--blue); }
+.item-row { display:flex; align-items:flex-start; gap:14px; padding:16px; }
+.item-avatar { width:44px; height:44px; border-radius:50%; background:linear-gradient(135deg, rgba(212,160,23,0.2), rgba(212,160,23,0.05)); border:1px solid var(--border-gold); display:flex; align-items:center; justify-content:center; font-family:'Syne',sans-serif; font-weight:800; font-size:18px; color:var(--gold); flex-shrink:0; }
+.item-thumb { width:56px; height:56px; border-radius:10px; object-fit:cover; border:1px solid var(--border); cursor:pointer; flex-shrink:0; transition:opacity 0.2s; }
+.item-thumb:hover { opacity:0.8; }
+.item-thumb-ph { width:56px; height:56px; border-radius:10px; background:var(--surface2); border:1px solid var(--border); display:flex; align-items:center; justify-content:center; font-size:22px; flex-shrink:0; }
+.item-body { flex:1; min-width:0; }
+.item-name { font-family:'Syne',sans-serif; font-size:15px; font-weight:700; margin-bottom:4px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+.item-meta { font-size:12px; color:var(--muted); line-height:1.7; }
+.item-meta b { color:#999; font-weight:500; }
+.item-actions { display:flex; flex-direction:column; gap:6px; flex-shrink:0; align-items:flex-end; }
+@media(min-width:500px){ .item-actions { flex-direction:row; align-items:center; } }
+
+/* Buttons */
+.btn { font-family:'Syne',sans-serif; font-weight:700; font-size:12px; padding:8px 14px; border-radius:9px; cursor:pointer; transition:all 0.2s; border:1px solid; white-space:nowrap; }
+.btn-approve { background:rgba(29,185,84,0.1); border-color:rgba(29,185,84,0.3); color:var(--green); }
+.btn-approve:hover { background:rgba(29,185,84,0.22); }
+.btn-reject { background:rgba(255,80,80,0.07); border-color:rgba(255,80,80,0.2); color:var(--red); }
+.btn-reject:hover { background:rgba(255,80,80,0.16); }
+.btn-paid { background:rgba(0,136,204,0.1); border-color:rgba(0,136,204,0.3); color:#4CB8FF; }
+.btn-paid:hover { background:rgba(0,136,204,0.2); }
+.btn-tg { background:rgba(44,165,224,0.1); border-color:rgba(44,165,224,0.3); color:var(--tg); }
+.btn-tg:hover { background:rgba(44,165,224,0.2); }
+.btn-edit { background:rgba(212,160,23,0.08); border-color:rgba(212,160,23,0.25); color:var(--gold); }
+.btn-edit:hover { background:rgba(212,160,23,0.18); }
+.btn-del { background:rgba(255,80,80,0.07); border-color:rgba(255,80,80,0.2); color:var(--red); }
+.btn-del:hover { background:rgba(255,80,80,0.16); }
+
+/* Pills */
+.pill { display:inline-block; font-size:10px; font-weight:700; padding:3px 10px; border-radius:100px; letter-spacing:0.4px; text-transform:uppercase; font-family:'Syne',sans-serif; }
+.pill-pending { background:rgba(212,160,23,0.1); color:var(--gold-light); }
+.pill-approved { background:rgba(29,185,84,0.1); color:var(--green); }
+.pill-rejected { background:rgba(255,80,80,0.08); color:#FF7070; }
+.pill-sent { background:rgba(0,136,204,0.1); color:#4CB8FF; }
+.pill-auto { background:rgba(160,160,255,0.08); color:#aaa; }
+.pill-active { background:rgba(29,185,84,0.12); color:var(--green); }
+.pill-inactive { background:rgba(102,102,102,0.12); color:var(--muted); }
+.pill-tg { background:rgba(44,165,224,0.12); color:var(--tg); }
+
+/* Empty state */
+.empty { text-align:center; padding:50px 20px; color:var(--muted2); }
+.empty-icon { font-size:40px; margin-bottom:12px; }
+.empty p { font-size:13px; }
+
+/* Settings */
+.settings-grid { display:flex; flex-direction:column; gap:14px; }
+.settings-card { background:var(--surface); border:1px solid var(--border); border-radius:16px; padding:22px; }
+.settings-card h3 { font-size:15px; margin-bottom:16px; display:flex; align-items:center; gap:8px; }
+.field { margin-bottom:14px; }
+.field label { display:block; font-size:11px; color:var(--muted); letter-spacing:0.8px; text-transform:uppercase; margin-bottom:7px; }
+.field input, .field textarea, .field select {
+  width:100%; background:var(--surface2); border:1px solid var(--border); color:var(--text);
+  padding:13px 15px; border-radius:11px; font-size:14px; font-family:'DM Sans',sans-serif;
+  outline:none; transition:border-color 0.2s; resize:vertical;
+}
+.field select { cursor:pointer; }
+.field input:focus, .field textarea:focus, .field select:focus { border-color:rgba(212,160,23,0.5); }
+.save-btn { background:var(--gold); color:#000; font-family:'Syne',sans-serif; font-weight:800; font-size:13px; border:none; padding:12px 24px; border-radius:10px; cursor:pointer; transition:background 0.2s; }
+.save-btn:hover { background:var(--gold-light); }
+.pw-msg { font-size:12px; margin-top:10px; min-height:18px; }
+
+/* ── TASK MANAGER ──────────────────────── */
+.task-manager-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 16px;
+}
+.btn-add-task {
+  background: linear-gradient(135deg, var(--gold), var(--gold-light));
+  color: #000;
+  font-family: 'Syne', sans-serif;
+  font-weight: 800;
+  font-size: 13px;
+  border: none;
+  padding: 11px 20px;
+  border-radius: 12px;
+  cursor: pointer;
+  transition: all 0.2s;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+.btn-add-task:hover { transform: translateY(-1px); box-shadow: 0 4px 20px rgba(212,160,23,0.3); }
+
+/* Task cards in manage view */
+.task-manage-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  padding: 18px;
+  display: flex;
+  align-items: flex-start;
+  gap: 14px;
+  transition: border-color 0.2s;
+  position: relative;
+  overflow: hidden;
+}
+.task-manage-card::before {
+  content: '';
+  position: absolute;
+  left: 0; top: 0; bottom: 0;
+  width: 3px;
+}
+.task-manage-card.active-task::before { background: var(--green); }
+.task-manage-card.inactive-task::before { background: var(--muted2); }
+.task-manage-card:hover { border-color: rgba(255,255,255,0.12); }
+.task-icon-wrap {
+  width: 48px; height: 48px;
+  border-radius: 12px;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 22px;
+  flex-shrink: 0;
+  background: var(--surface2);
+  border: 1px solid var(--border);
+}
+.task-manage-body { flex: 1; min-width: 0; }
+.task-manage-title { font-family:'Syne',sans-serif; font-size:15px; font-weight:700; margin-bottom:5px; display:flex; align-items:center; gap:8px; flex-wrap:wrap; }
+.task-manage-desc { font-size:12px; color:var(--muted); line-height:1.6; margin-bottom:8px; }
+.task-manage-meta { display:flex; gap:10px; flex-wrap:wrap; align-items:center; }
+.task-meta-tag { font-size:11px; background:var(--surface2); border:1px solid var(--border); border-radius:6px; padding:3px 9px; color:#888; display:flex; align-items:center; gap:4px; }
+.task-manage-actions { display:flex; gap:6px; flex-shrink:0; flex-wrap:wrap; align-items:flex-start; }
+
+/* Task form modal */
+.modal-overlay {
+  display: none;
+  position: fixed;
+  inset: 0;
+  z-index: 9000;
+  background: rgba(0,0,0,0.85);
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+  backdrop-filter: blur(8px);
+}
+.modal-overlay.show { display: flex; }
+.modal {
+  width: 100%;
+  max-width: 520px;
+  background: var(--surface);
+  border: 1px solid var(--border-gold);
+  border-radius: 24px;
+  padding: 28px;
+  max-height: 90vh;
+  overflow-y: auto;
+  scrollbar-width: none;
+}
+.modal::-webkit-scrollbar { display: none; }
+.modal-header { display:flex; align-items:center; justify-content:space-between; margin-bottom:22px; }
+.modal-header h3 { font-size:18px; }
+.modal-close { background:none; border:none; color:var(--muted); font-size:22px; cursor:pointer; width:36px; height:36px; border-radius:50%; display:flex; align-items:center; justify-content:center; transition:all 0.2s; }
+.modal-close:hover { background:var(--surface2); color:var(--text); }
+.modal-actions { display:flex; gap:10px; margin-top:6px; }
+.btn-cancel { background:none; border:1px solid var(--border); color:var(--muted); font-family:'Syne',sans-serif; font-weight:700; font-size:13px; padding:12px 22px; border-radius:10px; cursor:pointer; flex:1; transition:all 0.2s; }
+.btn-cancel:hover { border-color:rgba(255,255,255,0.15); color:var(--text); }
+.modal .save-btn { flex:2; }
+
+/* Telegram settings card */
+.tg-status-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 14px;
+  background: var(--surface2);
+  border-radius: 12px;
+  border: 1px solid var(--border);
+  margin-bottom: 16px;
+}
+.tg-dot { width:10px; height:10px; border-radius:50%; flex-shrink:0; }
+.tg-dot.connected { background:var(--green); box-shadow:0 0 8px rgba(29,185,84,0.5); }
+.tg-dot.disconnected { background:var(--muted2); }
+.tg-status-text { font-size:13px; flex:1; }
+.tg-status-text span { font-weight:600; }
+.tg-test-btn {
+  background: rgba(44,165,224,0.1);
+  border: 1px solid rgba(44,165,224,0.3);
+  color: var(--tg);
+  font-family: 'Syne',sans-serif;
+  font-weight:700;
+  font-size:12px;
+  padding:8px 14px;
+  border-radius:9px;
+  cursor:pointer;
+  transition:all 0.2s;
+}
+.tg-test-btn:hover { background:rgba(44,165,224,0.2); }
+
+/* Task completions section badges */
+.completion-card { border-left: 3px solid var(--tg); }
+
+/* Toggle switch */
+.toggle-wrap { display:flex; align-items:center; gap:10px; }
+.toggle { position:relative; width:44px; height:24px; cursor:pointer; }
+.toggle input { opacity:0; width:0; height:0; }
+.toggle-slider {
+  position:absolute; inset:0;
+  background:var(--surface3);
+  border:1px solid var(--border);
+  border-radius:100px;
+  transition:all 0.2s;
+}
+.toggle-slider:before {
+  content:'';
+  position:absolute;
+  width:18px; height:18px;
+  left:2px; top:2px;
+  background:#666;
+  border-radius:50%;
+  transition:all 0.2s;
+}
+.toggle input:checked + .toggle-slider { background:rgba(29,185,84,0.15); border-color:rgba(29,185,84,0.4); }
+.toggle input:checked + .toggle-slider:before { transform:translateX(20px); background:var(--green); }
+.toggle-label { font-size:13px; color:var(--text); }
+
+/* Inline help text */
+.field-hint { font-size:11px; color:var(--muted2); margin-top:5px; line-height:1.5; }
+
+/* Image lightbox */
+#lightbox { display:none; position:fixed; inset:0; z-index:9999; background:rgba(0,0,0,0.94); align-items:center; justify-content:center; }
+#lightbox.show { display:flex; }
+#lightbox img { max-width:92vw; max-height:88vh; border-radius:14px; box-shadow:0 0 60px rgba(0,0,0,0.8); }
+.lb-close { position:fixed; top:20px; right:20px; width:44px; height:44px; border-radius:50%; background:rgba(255,255,255,0.1); border:none; color:#fff; font-size:22px; cursor:pointer; display:flex; align-items:center; justify-content:center; }
+
+/* Toast */
+#toast {
+  position: fixed;
+  bottom: 30px;
+  left: 50%;
+  transform: translateX(-50%) translateY(20px);
+  background: var(--surface3);
+  color: var(--text);
+  border: 1px solid rgba(255,255,255,0.1);
+  border-radius: 100px;
+  padding: 11px 22px;
+  font-size: 13px;
+  font-weight: 500;
+  opacity: 0;
+  transition: all 0.3s;
+  white-space: nowrap;
+  z-index: 10000;
+  pointer-events: none;
+  max-width: 90vw;
+  text-align: center;
+}
+#toast.show { opacity:1; transform:translateX(-50%) translateY(0); }
+
+/* Pulse */
+@keyframes pulse { 0%,100%{opacity:1;transform:scale(1)} 50%{opacity:0.4;transform:scale(0.8)} }
+.pulse { display:inline-block; width:7px; height:7px; border-radius:50%; animation:pulse 1.5s ease-in-out infinite; vertical-align:middle; margin-right:4px; }
+
+/* Scrollbar */
+::-webkit-scrollbar { width:4px; }
+::-webkit-scrollbar-track { background:transparent; }
+::-webkit-scrollbar-thumb { background:rgba(255,255,255,0.1); border-radius:2px; }
+
+/* Divider */
+.divider { border:none; border-top:1px solid var(--border); margin:16px 0; }
+
+/* Inline row actions in task completions tab */
+.tasks-header-row { display:flex; align-items:center; justify-content:space-between; margin-bottom:12px; flex-wrap:wrap; gap:8px; }
+.tasks-count-badge { font-size:11px; background:rgba(44,165,224,0.1); border:1px solid rgba(44,165,224,0.2); color:var(--tg); padding:4px 12px; border-radius:100px; font-weight:600; font-family:'Syne',sans-serif; }
+</style>
+</head>
+<body>
+
+<!-- LOGIN -->
+<div id="login-screen">
+  <div class="login-logo">IMX<span>World</span></div>
+  <div class="login-sub">Admin Panel</div>
+  <div class="login-card">
+    <h2>🔐 Admin Login</h2>
+    <p>Enter your admin password to access the dashboard.</p>
+    <input class="inp" type="password" id="pwInput" placeholder="Admin password" onkeydown="if(event.key==='Enter')doLogin()">
+    <button class="login-btn" onclick="doLogin()">Unlock Dashboard →</button>
+    <div class="login-err" id="loginErr">❌ Incorrect password. Please try again.</div>
+    <div class="login-note">⚠️ Open this file in the same browser<br>as your IMX World user site.</div>
+  </div>
+</div>
+
+<!-- DASHBOARD -->
+<div id="dashboard">
+
+  <!-- Top Bar -->
+  <div class="topbar">
+    <div>
+      <span class="topbar-logo">IMX<span>World</span></span>
+      <span class="topbar-badge">ADMIN</span>
+    </div>
+    <div class="topbar-right">
+      <button class="refresh-all-btn" onclick="refreshAll()">↻ Refresh</button>
+      <button class="logout-btn" onclick="doLogout()">Log Out</button>
+    </div>
+  </div>
+
+  <!-- Stats -->
+  <div class="stats-grid">
+    <div class="stat-card gold">
+      <div class="stat-val" id="sUsers">0</div>
+      <div class="stat-lbl">Total Users</div>
+      <div class="stat-sub">Registered accounts</div>
+    </div>
+    <div class="stat-card red">
+      <div class="stat-val" id="sPendDep">0</div>
+      <div class="stat-lbl">Pending Deposits</div>
+      <div class="stat-sub">Awaiting approval</div>
+    </div>
+    <div class="stat-card green">
+      <div class="stat-val" id="sPendWd">0</div>
+      <div class="stat-lbl">Pending Withdrawals</div>
+      <div class="stat-sub">Awaiting payment</div>
+    </div>
+    <div class="stat-card blue">
+      <div class="stat-val" id="sTasks">0</div>
+      <div class="stat-lbl">Task Completions</div>
+      <div class="stat-sub">All task types</div>
+    </div>
+  </div>
+
+  <!-- Tabs -->
+  <div class="tabs-wrap">
+    <div class="tabs">
+      <button class="tab-btn active" id="tab-deposits" onclick="switchTab('deposits')">
+        💳 Deposits <span class="tab-badge" id="bdg-deposits" style="display:none">0</span>
+      </button>
+      <button class="tab-btn" id="tab-withdrawals" onclick="switchTab('withdrawals')">
+        💸 Withdrawals <span class="tab-badge" id="bdg-withdrawals" style="display:none">0</span>
+      </button>
+      <button class="tab-btn" id="tab-users" onclick="switchTab('users')">👥 Users</button>
+      <button class="tab-btn" id="tab-referrals" onclick="switchTab('referrals')">🔗 Referrals</button>
+      <button class="tab-btn" id="tab-task-manage" onclick="switchTab('task-manage')">📋 Manage Tasks <span class="tab-badge" id="bdg-tasks" style="display:none">0</span></button>
+      <button class="tab-btn" id="tab-task-completions" onclick="switchTab('task-completions')">✅ Completions</button>
+      <button class="tab-btn" id="tab-settings" onclick="switchTab('settings')">⚙️ Settings</button>
+    </div>
+  </div>
+
+  <!-- Content -->
+  <div class="content">
+
+    <!-- DEPOSITS -->
+    <div class="section active" id="sec-deposits">
+      <div class="sec-hd">
+        <span class="sec-title">Deposit Submissions</span>
+        <button class="sec-refresh" onclick="renderDeposits()">↻ Refresh</button>
+      </div>
+      <div class="sec-filter">
+        <button class="filter-btn active" onclick="setFilter('dep','all',this)">All</button>
+        <button class="filter-btn" onclick="setFilter('dep','pending',this)">⏳ Pending</button>
+        <button class="filter-btn" onclick="setFilter('dep','approved',this)">✅ Approved</button>
+        <button class="filter-btn" onclick="setFilter('dep','rejected',this)">❌ Rejected</button>
+      </div>
+      <div class="card-list" id="list-deposits"></div>
+    </div>
+
+    <!-- WITHDRAWALS -->
+    <div class="section" id="sec-withdrawals">
+      <div class="sec-hd">
+        <span class="sec-title">Withdrawal Requests</span>
+        <button class="sec-refresh" onclick="renderWithdrawals()">↻ Refresh</button>
+      </div>
+      <div class="sec-filter">
+        <button class="filter-btn active" onclick="setFilter('wd','all',this)">All</button>
+        <button class="filter-btn" onclick="setFilter('wd','pending',this)">⏳ Pending</button>
+        <button class="filter-btn" onclick="setFilter('wd','sent',this)">💸 Paid</button>
+        <button class="filter-btn" onclick="setFilter('wd','rejected',this)">❌ Rejected</button>
+      </div>
+      <div class="card-list" id="list-withdrawals"></div>
+    </div>
+
+    <!-- USERS -->
+    <div class="section" id="sec-users">
+      <div class="sec-hd">
+        <span class="sec-title">Registered Users</span>
+        <button class="sec-refresh" onclick="renderUsers()">↻ Refresh</button>
+      </div>
+      <div class="card-list" id="list-users"></div>
+    </div>
+
+    <!-- REFERRALS -->
+    <div class="section" id="sec-referrals">
+      <div class="sec-hd">
+        <span class="sec-title">Referral Activity</span>
+        <button class="sec-refresh" onclick="renderReferrals()">↻ Refresh</button>
+      </div>
+      <div class="card-list" id="list-referrals"></div>
+    </div>
+
+    <!-- MANAGE TASKS -->
+    <div class="section" id="sec-task-manage">
+      <div class="task-manager-header">
+        <span class="sec-title">Task Manager</span>
+        <button class="btn-add-task" onclick="openTaskModal()">+ Add Task</button>
+      </div>
+      <div id="tg-banner" style="display:none; background:rgba(44,165,224,0.06); border:1px solid rgba(44,165,224,0.2); border-radius:12px; padding:12px 16px; margin-bottom:14px; font-size:12px; color:#88c8f0; line-height:1.6;">
+        💡 <strong>Telegram Bot connected.</strong> Task completions will be automatically verified via your bot.
+      </div>
+      <div class="card-list" id="list-manage-tasks"></div>
+    </div>
+
+    <!-- TASK COMPLETIONS -->
+    <div class="section" id="sec-task-completions">
+      <div class="tasks-header-row">
+        <span class="sec-title">Task Completions</span>
+        <span class="tasks-count-badge" id="completions-count">0 completions</span>
+      </div>
+      <div class="sec-filter">
+        <button class="filter-btn active" onclick="setTaskFilter('all',this)">All Tasks</button>
+        <div id="task-filter-btns"></div>
+      </div>
+      <div class="card-list" id="list-task-completions"></div>
+    </div>
+
+    <!-- SETTINGS -->
+    <div class="section" id="sec-settings">
+      <div style="margin-top:8px" class="settings-grid">
+
+        <!-- Telegram Bot -->
+        <div class="settings-card">
+          <h3>✈️ Telegram Bot Integration</h3>
+          <div class="tg-status-row" id="tgStatusRow">
+            <div class="tg-dot disconnected" id="tgDot"></div>
+            <div class="tg-status-text" id="tgStatusText">Not connected — enter Bot Token below</div>
+            <button class="tg-test-btn" onclick="testTelegramBot()">Test</button>
+          </div>
+          <div class="field">
+            <label>Bot Token</label>
+            <input type="text" id="sTgToken" placeholder="1234567890:ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghi">
+            <div class="field-hint">Get your token from @BotFather on Telegram. Keep it secret!</div>
+          </div>
+          <div class="field">
+            <label>Admin Chat ID (for notifications)</label>
+            <input type="text" id="sTgChatId" placeholder="e.g. 123456789">
+            <div class="field-hint">Your personal Telegram user ID. Use @userinfobot to find it.</div>
+          </div>
+          <div class="field">
+            <label>Default Channel Username (for tasks)</label>
+            <input type="text" id="sTgChannel" placeholder="e.g. @IMXWorldOfficial">
+            <div class="field-hint">The default Telegram channel users must join for tasks.</div>
+          </div>
+          <div class="toggle-wrap" style="margin-bottom:16px;">
+            <label class="toggle">
+              <input type="checkbox" id="sTgNotify" onchange="saveTelegramSettings()">
+              <span class="toggle-slider"></span>
+            </label>
+            <span class="toggle-label">Notify me when deposits/withdrawals arrive</span>
+          </div>
+          <button class="save-btn" onclick="saveTelegramSettings()">Save Telegram Settings</button>
+        </div>
+
+        <!-- Telebirr -->
+        <div class="settings-card">
+          <h3>📱 Telebirr Details</h3>
+          <div class="field">
+            <label>Telebirr Number</label>
+            <input type="tel" id="sTelNum" placeholder="e.g. 0951339226">
+          </div>
+          <div class="field">
+            <label>Account Name</label>
+            <input type="text" id="sTelName" placeholder="e.g. IMX World Admin">
+          </div>
+          <button class="save-btn" onclick="saveTelebirr()">Save Telebirr Details</button>
+        </div>
+
+        <!-- Announcement -->
+        <div class="settings-card">
+          <h3>📢 Announcement Banner</h3>
+          <div class="field">
+            <label>Message (shown to all users on Home screen)</label>
+            <textarea id="sAnnounce" rows="3" placeholder="e.g. Payouts processed every day 8AM–8PM. Contact admin on Telegram for support."></textarea>
+          </div>
+          <button class="save-btn" onclick="saveAnnouncement()">Save Announcement</button>
+          <button onclick="clearAnnouncement()" style="margin-left:10px;background:none;border:1px solid var(--border);color:var(--muted);font-size:12px;padding:10px 16px;border-radius:9px;cursor:pointer;">Clear</button>
+        </div>
+
+        <!-- Password -->
+        <div class="settings-card">
+          <h3>🔐 Change Admin Password</h3>
+          <div class="field">
+            <label>Current Password</label>
+            <input type="password" id="sCurPw" placeholder="Current password">
+          </div>
+          <div class="field">
+            <label>New Password</label>
+            <input type="password" id="sNewPw" placeholder="New password (min 6 chars)">
+          </div>
+          <div class="field">
+            <label>Confirm New Password</label>
+            <input type="password" id="sConPw" placeholder="Repeat new password">
+          </div>
+          <button class="save-btn" onclick="changePassword()">Change Password</button>
+          <div class="pw-msg" id="pwMsg"></div>
+        </div>
+
+        <!-- Data -->
+        <div class="settings-card">
+          <h3>🗑️ Data Management</h3>
+          <p style="font-size:13px;color:var(--muted);margin-bottom:16px;line-height:1.6">Danger zone — these actions cannot be undone.</p>
+          <div style="display:flex;gap:10px;flex-wrap:wrap">
+            <button onclick="clearSubmissions()" style="background:rgba(255,80,80,0.08);border:1px solid rgba(255,80,80,0.2);color:var(--red);font-size:12px;font-weight:600;padding:10px 18px;border-radius:9px;cursor:pointer;font-family:'Syne',sans-serif;">Clear All Submissions</button>
+            <button onclick="clearUsers()" style="background:rgba(255,80,80,0.08);border:1px solid rgba(255,80,80,0.2);color:var(--red);font-size:12px;font-weight:600;padding:10px 18px;border-radius:9px;cursor:pointer;font-family:'Syne',sans-serif;">Clear All Users</button>
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<!-- ── TASK MODAL ────────────────────────────── -->
+<div class="modal-overlay" id="taskModal">
+  <div class="modal">
+    <div class="modal-header">
+      <h3 id="taskModalTitle">➕ Add New Task</h3>
+      <button class="modal-close" onclick="closeTaskModal()">×</button>
+    </div>
+
+    <input type="hidden" id="editingTaskId">
+
+    <div class="field">
+      <label>Task Title *</label>
+      <input type="text" id="tTitle" placeholder="e.g. Join our Telegram Channel">
+    </div>
+
+    <div class="field">
+      <label>Description</label>
+      <textarea id="tDesc" rows="2" placeholder="e.g. Join and stay in our official Telegram channel to earn ETB."></textarea>
+    </div>
+
+    <div class="field">
+      <label>Task Type</label>
+      <select id="tType" onchange="onTaskTypeChange()">
+        <option value="telegram_join">📢 Join Telegram Channel</option>
+        <option value="telegram_follow">👁️ Follow Telegram Channel</option>
+        <option value="watch_video">🎬 Watch Video</option>
+        <option value="visit_link">🔗 Visit Link</option>
+        <option value="custom">⭐ Custom Task</option>
+      </select>
+    </div>
+
+    <div class="field" id="tTgChannelField">
+      <label>Telegram Channel Link / Username</label>
+      <input type="text" id="tTgChannel" placeholder="e.g. https://t.me/IMXWorldOfficial or @IMXWorldOfficial">
+      <div class="field-hint">Users will be directed to join this channel. Completion is verified via the bot.</div>
+    </div>
+
+    <div class="field" id="tLinkField" style="display:none">
+      <label>URL / Link</label>
+      <input type="url" id="tLink" placeholder="https://...">
+    </div>
+
+    <div class="field">
+      <label>Reward Amount (ETB) *</label>
+      <input type="number" id="tReward" placeholder="e.g. 10" min="1" max="10000">
+    </div>
+
+    <div class="field">
+      <label>Task Icon (emoji)</label>
+      <input type="text" id="tIcon" placeholder="📢" maxlength="4" style="font-size:22px;padding:10px 14px;width:80px;">
+    </div>
+
+    <div class="toggle-wrap" style="margin-bottom:20px;">
+      <label class="toggle">
+        <input type="checkbox" id="tActive" checked>
+        <span class="toggle-slider"></span>
+      </label>
+      <span class="toggle-label">Task is active (visible to users)</span>
+    </div>
+
+    <div class="modal-actions">
+      <button class="btn-cancel" onclick="closeTaskModal()">Cancel</button>
+      <button class="save-btn" onclick="saveTask()">Save Task</button>
+    </div>
+  </div>
+</div>
+
+<!-- Lightbox -->
+<div id="lightbox" onclick="closeLB()">
+  <button class="lb-close" onclick="closeLB()">×</button>
+  <img id="lbImg" src="" alt="Screenshot">
+</div>
+
+<!-- Toast -->
+<div id="toast"></div>
+
+<script>
+// ══════════════════════════════════════════════
+// STORAGE KEYS — must match user site exactly
+// ══════════════════════════════════════════════
+const ADMIN_PW_KEY      = 'imx_admin_pw';
+const ADMIN_DATA_KEY    = 'imx_admin_data';
+const SUBMISSIONS_KEY   = 'imx_submissions';
+const PHONES_KEY        = 'imx_registered_phones';
+const SESSION_KEY       = 'imx_admin_session_standalone';
+const TASKS_KEY         = 'imx_admin_tasks';
+const DEFAULT_PW        = 'IMXadmin2024';
+
+const filters = { dep: 'all', wd: 'all', task: 'all' };
+
+// ── Auth ─────────────────────────────────────
+function getPw() { return localStorage.getItem(ADMIN_PW_KEY) || DEFAULT_PW; }
+
+function doLogin() {
+  const val = document.getElementById('pwInput').value;
+  if (val === getPw()) {
+    sessionStorage.setItem(SESSION_KEY, '1');
+    document.getElementById('loginErr').style.display = 'none';
+    document.getElementById('pwInput').value = '';
+    showDashboard();
+  } else {
+    document.getElementById('loginErr').style.display = 'block';
+    document.getElementById('pwInput').value = '';
+    document.getElementById('pwInput').focus();
+  }
+}
+
+function doLogout() {
+  sessionStorage.removeItem(SESSION_KEY);
+  document.getElementById('dashboard').style.display = 'none';
+  document.getElementById('login-screen').style.display = 'flex';
+}
+
+function showDashboard() {
+  document.getElementById('login-screen').style.display = 'none';
+  document.getElementById('dashboard').style.display = 'block';
+  loadSettings();
+  refreshAll();
+  updateTgBanner();
+}
+
+window.addEventListener('DOMContentLoaded', () => {
+  if (sessionStorage.getItem(SESSION_KEY) === '1') showDashboard();
+});
+
+// ── Data helpers ─────────────────────────────
+function getSubs()     { try { return JSON.parse(localStorage.getItem(SUBMISSIONS_KEY) || '[]'); } catch(e) { return []; } }
+function saveSubs(arr) { localStorage.setItem(SUBMISSIONS_KEY, JSON.stringify(arr)); }
+function getPhones()   { try { return JSON.parse(localStorage.getItem(PHONES_KEY) || '[]'); } catch(e) { return []; } }
+function getSettings() { try { return JSON.parse(localStorage.getItem(ADMIN_DATA_KEY) || '{}'); } catch(e) { return {}; } }
+function saveSettings(obj) { localStorage.setItem(ADMIN_DATA_KEY, JSON.stringify(obj)); }
+function getTasks()    { try { return JSON.parse(localStorage.getItem(TASKS_KEY) || '[]'); } catch(e) { return []; } }
+function saveTasks(arr){ localStorage.setItem(TASKS_KEY, JSON.stringify(arr)); }
+
+function fmtDate(iso) {
+  if (!iso) return '—';
+  const d = new Date(iso);
+  return d.toLocaleDateString('en-GB', { day:'2-digit', month:'short', year:'numeric' })
+       + ' ' + d.toLocaleTimeString('en-GB', { hour:'2-digit', minute:'2-digit' });
+}
+
+function uid() { return Date.now().toString(36) + Math.random().toString(36).slice(2,7); }
+
+// ── Stats ─────────────────────────────────────
+function updateStats() {
+  const subs   = getSubs();
+  const phones = getPhones();
+  const tasks  = getTasks();
+  const pendDep = subs.filter(s => s.type==='deposit' && s.adminStatus==='pending').length;
+  const pendWd  = subs.filter(s => s.type==='withdrawal' && s.adminStatus==='pending').length;
+  const completions = subs.filter(s => s.type==='task_telegram' || s.type==='task_completion').length;
+  const activeTasks = tasks.filter(t => t.active).length;
+
+  document.getElementById('sUsers').textContent   = phones.length;
+  document.getElementById('sPendDep').textContent = pendDep;
+  document.getElementById('sPendWd').textContent  = pendWd;
+  document.getElementById('sTasks').textContent   = completions;
+
+  const bd = document.getElementById('bdg-deposits');
+  const bw = document.getElementById('bdg-withdrawals');
+  const bt = document.getElementById('bdg-tasks');
+  bd.textContent = pendDep; bd.style.display = pendDep > 0 ? 'inline-block' : 'none';
+  bw.textContent = pendWd;  bw.style.display = pendWd  > 0 ? 'inline-block' : 'none';
+  bt.textContent = activeTasks; bt.style.display = activeTasks > 0 ? 'inline-block' : 'none';
+}
+
+// ── Tabs ─────────────────────────────────────
+function switchTab(name) {
+  document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+  document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
+  document.getElementById('tab-' + name).classList.add('active');
+  document.getElementById('sec-' + name).classList.add('active');
+  const renders = {
+    deposits:         renderDeposits,
+    withdrawals:      renderWithdrawals,
+    users:            renderUsers,
+    referrals:        renderReferrals,
+    'task-manage':    renderManageTasks,
+    'task-completions': renderTaskCompletions,
+    settings:         loadSettings,
+  };
+  if (renders[name]) renders[name]();
+}
+
+function setFilter(type, val, el) {
+  filters[type] = val;
+  el.closest('.sec-filter').querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+  el.classList.add('active');
+  if (type === 'dep') renderDeposits();
+  if (type === 'wd')  renderWithdrawals();
+}
+
+function setTaskFilter(val, el) {
+  filters.task = val;
+  document.querySelectorAll('#sec-task-completions .filter-btn').forEach(b => b.classList.remove('active'));
+  if (el) el.classList.add('active');
+  renderTaskCompletions();
+}
+
+function refreshAll() {
+  updateStats();
+  renderDeposits();
+  renderWithdrawals();
+  renderUsers();
+  renderReferrals();
+  renderManageTasks();
+  renderTaskCompletions();
+}
+
+// ── DEPOSITS ──────────────────────────────────
+function renderDeposits() {
+  const all  = getSubs().filter(s => s.type === 'deposit').sort((a,b) => new Date(b.submittedAt)-new Date(a.submittedAt));
+  const list = filters.dep === 'all' ? all : all.filter(s => s.adminStatus === filters.dep);
+  const el   = document.getElementById('list-deposits');
+  if (!list.length) { el.innerHTML = emptyState('💳', filters.dep === 'all' ? 'No deposit submissions yet.' : 'No ' + filters.dep + ' deposits.'); return; }
+
+  el.innerHTML = list.map(s => {
+    const cls  = s.adminStatus === 'pending' ? 'pending' : s.adminStatus === 'approved' ? 'approved' : 'rejected';
+    const pill = pillHtml(s.adminStatus);
+    const actions = s.adminStatus === 'pending'
+      ? `<button class="btn btn-approve" onclick="approveDeposit('${s.id}')">✓ Approve</button>
+         <button class="btn btn-reject"  onclick="rejectDeposit('${s.id}')">✕ Reject</button>`
+      : pill;
+    const thumb = s.screenshotData
+      ? `<img class="item-thumb" src="${s.screenshotData}" onclick="openLB('${s.id}')" title="View screenshot">`
+      : `<div class="item-thumb-ph">📷</div>`;
+
+    return `<div class="item-card ${cls}" id="dep-${s.id}">
+      <div class="item-row">
+        ${thumb}
+        <div class="item-body">
+          <div class="item-name">${s.userName || '—'}</div>
+          <div class="item-meta">
+            📱 <b>${s.userPhone || '—'}</b><br>
+            💰 Amount: <b>100 ETB</b> · Bonus: <b style="color:var(--green)">+300 ETB</b><br>
+            🕐 ${fmtDate(s.submittedAt)}
+          </div>
+        </div>
+        <div class="item-actions">${actions}</div>
+      </div>
+    </div>`;
+  }).join('');
+  updateStats();
+}
+
+function approveDeposit(id) {
+  const subs = getSubs(); const i = subs.findIndex(s => s.id === id); if (i < 0) return;
+  subs[i].adminStatus = 'approved'; saveSubs(subs); renderDeposits();
+  toast('✅ Deposit approved! User gets +300 ETB.');
+  sendTgNotification(`✅ Deposit APPROVED\n👤 ${subs[i].userName || '—'}\n📱 ${subs[i].userPhone || '—'}`);
+}
+
+function rejectDeposit(id) {
+  if (!confirm('Reject this deposit? The user will be notified.')) return;
+  const subs = getSubs(); const i = subs.findIndex(s => s.id === id); if (i < 0) return;
+  subs[i].adminStatus = 'rejected'; saveSubs(subs); renderDeposits();
+  toast('❌ Deposit rejected.');
+}
+
+// ── WITHDRAWALS ───────────────────────────────
+function renderWithdrawals() {
+  const all  = getSubs().filter(s => s.type === 'withdrawal').sort((a,b) => new Date(b.submittedAt)-new Date(a.submittedAt));
+  const list = filters.wd === 'all' ? all : all.filter(s => s.adminStatus === filters.wd);
+  const el   = document.getElementById('list-withdrawals');
+  if (!list.length) { el.innerHTML = emptyState('💸', filters.wd === 'all' ? 'No withdrawal requests yet.' : 'No ' + filters.wd + ' withdrawals.'); return; }
+
+  el.innerHTML = list.map(s => {
+    const cls     = s.adminStatus === 'pending' ? 'pending' : s.adminStatus === 'sent' ? 'sent' : s.adminStatus === 'rejected' ? 'rejected' : 'approved';
+    const pill    = pillHtml(s.adminStatus);
+    const actions = (s.adminStatus === 'pending' || s.adminStatus === 'processing')
+      ? `<button class="btn btn-paid"   onclick="markPaid('${s.id}')">💸 Mark Paid</button>
+         <button class="btn btn-reject" onclick="rejectWithdrawal('${s.id}')">✕ Reject</button>`
+      : pill;
+    const initials = (s.userName || 'U').charAt(0).toUpperCase();
+
+    return `<div class="item-card ${cls}" id="wd-${s.id}">
+      <div class="item-row">
+        <div class="item-avatar">${initials}</div>
+        <div class="item-body">
+          <div class="item-name">${s.userName || '—'}</div>
+          <div class="item-meta">
+            📱 Telebirr: <b>${s.telebirrPhone || '—'}</b><br>
+            👤 Name: <b>${s.telebirrName || '—'}</b><br>
+            💰 Amount: <b style="color:var(--gold-light)">500 ETB</b><br>
+            🕐 ${fmtDate(s.submittedAt)}
+          </div>
+        </div>
+        <div class="item-actions">${actions}</div>
+      </div>
+    </div>`;
+  }).join('');
+  updateStats();
+}
+
+function markPaid(id) {
+  const subs = getSubs(); const i = subs.findIndex(s => s.id === id); if (i < 0) return;
+  subs[i].adminStatus = 'sent'; saveSubs(subs); renderWithdrawals();
+  toast('💸 Marked as paid! User will see payment confirmation.');
+}
+
+function rejectWithdrawal(id) {
+  if (!confirm('Reject this withdrawal request?')) return;
+  const subs = getSubs(); const i = subs.findIndex(s => s.id === id); if (i < 0) return;
+  subs[i].adminStatus = 'rejected'; saveSubs(subs); renderWithdrawals();
+  toast('❌ Withdrawal rejected.');
+}
+
+// ── USERS ─────────────────────────────────────
+function renderUsers() {
+  const phones = getPhones();
+  const el = document.getElementById('list-users');
+  if (!phones.length) { el.innerHTML = emptyState('👥', 'No registered users yet.'); return; }
+  el.innerHTML = phones.map((ph, i) => `
+    <div class="item-card approved">
+      <div class="item-row">
+        <div class="item-avatar" style="background:rgba(29,185,84,0.1);border-color:rgba(29,185,84,0.3);color:var(--green);font-size:14px">${i+1}</div>
+        <div class="item-body">
+          <div class="item-name">${ph}</div>
+          <div class="item-meta">Registered user · Active account</div>
+        </div>
+        <span class="pill pill-approved">Active</span>
+      </div>
+    </div>`).join('');
+  updateStats();
+}
+
+// ── REFERRALS ─────────────────────────────────
+function renderReferrals() {
+  const list = getSubs().filter(s => s.type === 'referral').sort((a,b) => new Date(b.submittedAt)-new Date(a.submittedAt));
+  const el = document.getElementById('list-referrals');
+  if (!list.length) { el.innerHTML = emptyState('🔗', 'No referral activity yet.'); return; }
+  el.innerHTML = list.map(s => `
+    <div class="item-card approved">
+      <div class="item-row">
+        <div class="item-avatar" style="font-size:22px">🔗</div>
+        <div class="item-body">
+          <div class="item-name">${s.newUserName || '—'}</div>
+          <div class="item-meta">
+            📱 <b>${s.newUserPhone || '—'}</b><br>
+            🔗 Invited by code: <b style="color:var(--gold)">${s.inviterCode || '—'}</b><br>
+            💰 Bonus: <b style="color:var(--green)">+${s.bonusAmount || 5} ETB</b><br>
+            🕐 ${fmtDate(s.submittedAt)}
+          </div>
+        </div>
+        <span class="pill pill-approved">Confirmed</span>
+      </div>
+    </div>`).join('');
+}
+
+// ── MANAGE TASKS ──────────────────────────────
+const TASK_TYPE_ICONS = {
+  telegram_join:   '📢',
+  telegram_follow: '👁️',
+  watch_video:     '🎬',
+  visit_link:      '🔗',
+  custom:          '⭐',
+};
+const TASK_TYPE_LABELS = {
+  telegram_join:   'Join Telegram',
+  telegram_follow: 'Follow Telegram',
+  watch_video:     'Watch Video',
+  visit_link:      'Visit Link',
+  custom:          'Custom',
+};
+
+function renderManageTasks() {
+  const tasks = getTasks();
+  const el = document.getElementById('list-manage-tasks');
+  updateTgBanner();
+
+  if (!tasks.length) {
+    el.innerHTML = emptyState('📋', 'No tasks yet. Click "Add Task" to create your first task.');
+    return;
+  }
+
+  el.innerHTML = tasks.map(t => {
+    const icon       = t.icon || TASK_TYPE_ICONS[t.type] || '📋';
+    const typeLabel  = TASK_TYPE_LABELS[t.type] || t.type;
+    const statusCls  = t.active ? 'active-task' : 'inactive-task';
+    const statusPill = t.active
+      ? '<span class="pill pill-active">● Active</span>'
+      : '<span class="pill pill-inactive">○ Inactive</span>';
+    const tgLink = (t.type === 'telegram_join' || t.type === 'telegram_follow') && t.tgChannel
+      ? `<span class="task-meta-tag">✈️ ${t.tgChannel}</span>` : '';
+    const linkTag = t.link ? `<span class="task-meta-tag">🔗 ${t.link.slice(0,30)}…</span>` : '';
+    const completionCount = getSubs().filter(s => (s.type === 'task_telegram' || s.type === 'task_completion') && s.taskId === t.id).length;
+
+    return `<div class="task-manage-card ${statusCls}" id="tmcard-${t.id}">
+      <div class="task-icon-wrap">${icon}</div>
+      <div class="task-manage-body">
+        <div class="task-manage-title">
+          ${t.title}
+          ${statusPill}
+          <span class="pill pill-tg" style="font-size:9px;">${typeLabel}</span>
+        </div>
+        <div class="task-manage-desc">${t.description || 'No description'}</div>
+        <div class="task-manage-meta">
+          <span class="task-meta-tag">💰 ${t.reward} ETB</span>
+          ${tgLink}${linkTag}
+          <span class="task-meta-tag">✅ ${completionCount} completions</span>
+        </div>
+      </div>
+      <div class="task-manage-actions">
+        <button class="btn btn-edit" onclick="openTaskModal('${t.id}')">✏️ Edit</button>
+        <button class="btn btn-del"  onclick="deleteTask('${t.id}')">🗑️</button>
+      </div>
+    </div>`;
+  }).join('');
+  updateStats();
+}
+
+function openTaskModal(editId) {
+  const modal = document.getElementById('taskModal');
+  const isEdit = !!editId;
+  document.getElementById('taskModalTitle').textContent = isEdit ? '✏️ Edit Task' : '➕ Add New Task';
+  document.getElementById('editingTaskId').value = editId || '';
+
+  if (isEdit) {
+    const task = getTasks().find(t => t.id === editId);
+    if (!task) return;
+    document.getElementById('tTitle').value     = task.title || '';
+    document.getElementById('tDesc').value      = task.description || '';
+    document.getElementById('tType').value      = task.type || 'telegram_join';
+    document.getElementById('tTgChannel').value = task.tgChannel || '';
+    document.getElementById('tLink').value      = task.link || '';
+    document.getElementById('tReward').value    = task.reward || '';
+    document.getElementById('tIcon').value      = task.icon || '';
+    document.getElementById('tActive').checked  = task.active !== false;
+  } else {
+    document.getElementById('tTitle').value     = '';
+    document.getElementById('tDesc').value      = '';
+    document.getElementById('tType').value      = 'telegram_join';
+    document.getElementById('tTgChannel').value = '';
+    document.getElementById('tLink').value      = '';
+    document.getElementById('tReward').value    = '10';
+    document.getElementById('tIcon').value      = '📢';
+    document.getElementById('tActive').checked  = true;
+  }
+
+  onTaskTypeChange();
+  modal.classList.add('show');
+}
+
+function closeTaskModal() {
+  document.getElementById('taskModal').classList.remove('show');
+}
+
+function onTaskTypeChange() {
+  const type = document.getElementById('tType').value;
+  const isTg   = type === 'telegram_join' || type === 'telegram_follow';
+  const isLink = type === 'visit_link' || type === 'watch_video';
+  document.getElementById('tTgChannelField').style.display = isTg ? '' : 'none';
+  document.getElementById('tLinkField').style.display      = isLink ? '' : 'none';
+  // Auto-set icon if user hasn't changed it
+  const iconInput = document.getElementById('tIcon');
+  if (!iconInput.value || Object.values(TASK_TYPE_ICONS).includes(iconInput.value)) {
+    iconInput.value = TASK_TYPE_ICONS[type] || '⭐';
+  }
+}
+
+function saveTask() {
+  const editId = document.getElementById('editingTaskId').value;
+  const title  = document.getElementById('tTitle').value.trim();
+  const reward = parseInt(document.getElementById('tReward').value);
+
+  if (!title) { toast('⚠️ Task title is required.'); return; }
+  if (!reward || reward < 1) { toast('⚠️ Enter a valid reward amount.'); return; }
+
+  const tasks = getTasks();
+  const taskObj = {
+    id:          editId || uid(),
+    title,
+    description: document.getElementById('tDesc').value.trim(),
+    type:        document.getElementById('tType').value,
+    tgChannel:   document.getElementById('tTgChannel').value.trim(),
+    link:        document.getElementById('tLink').value.trim(),
+    reward,
+    icon:        document.getElementById('tIcon').value.trim() || TASK_TYPE_ICONS[document.getElementById('tType').value] || '📋',
+    active:      document.getElementById('tActive').checked,
+    createdAt:   editId ? (tasks.find(t => t.id === editId)?.createdAt || new Date().toISOString()) : new Date().toISOString(),
+    updatedAt:   new Date().toISOString(),
+  };
+
+  if (editId) {
+    const i = tasks.findIndex(t => t.id === editId);
+    if (i >= 0) tasks[i] = taskObj; else tasks.push(taskObj);
+  } else {
+    tasks.push(taskObj);
+  }
+
+  saveTasks(tasks);
+  closeTaskModal();
+  renderManageTasks();
+  toast(editId ? '✅ Task updated!' : '✅ Task created! Users can now see it.');
+}
+
+function deleteTask(id) {
+  if (!confirm('Delete this task? This cannot be undone.')) return;
+  saveTasks(getTasks().filter(t => t.id !== id));
+  renderManageTasks();
+  toast('🗑️ Task deleted.');
+}
+
+// ── TASK COMPLETIONS ──────────────────────────
+function renderTaskCompletions() {
+  const tasks = getTasks();
+  const all = getSubs().filter(s => s.type === 'task_telegram' || s.type === 'task_completion').sort((a,b) => new Date(b.submittedAt)-new Date(a.submittedAt));
+  const list = filters.task === 'all' ? all : all.filter(s => s.taskId === filters.task);
+  const el = document.getElementById('list-task-completions');
+
+  // Build filter buttons
+  const filterCont = document.getElementById('task-filter-btns');
+  filterCont.innerHTML = tasks.map(t => {
+    const cnt = all.filter(s => s.taskId === t.id).length;
+    const isActive = filters.task === t.id;
+    return `<button class="filter-btn${isActive ? ' active' : ''}" onclick="setTaskFilter('${t.id}', this)">${t.icon || '📋'} ${t.title} (${cnt})</button>`;
+  }).join('');
+
+  document.getElementById('completions-count').textContent = list.length + ' completion' + (list.length === 1 ? '' : 's');
+
+  if (!list.length) { el.innerHTML = emptyState('✅', 'No task completions yet.'); return; }
+
+  el.innerHTML = list.map(s => {
+    const task = tasks.find(t => t.id === s.taskId);
+    const taskName = task ? task.title : (s.taskTitle || 'Telegram Channel Join');
+    const reward   = task ? task.reward : 10;
+
+    return `<div class="item-card completion-card">
+      <div class="item-row">
+        <div class="item-avatar" style="font-size:22px">${task?.icon || '📋'}</div>
+        <div class="item-body">
+          <div class="item-name">${s.userName || '—'}</div>
+          <div class="item-meta">
+            📱 <b>${s.userPhone || '—'}</b><br>
+            ✅ ${taskName}<br>
+            💰 Reward: <b style="color:var(--green)">+${reward} ETB</b><br>
+            🕐 ${fmtDate(s.submittedAt)}
+          </div>
+        </div>
+        <span class="pill pill-auto">Auto ✓</span>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+// ── SETTINGS ──────────────────────────────────
+function loadSettings() {
+  const s = getSettings();
+  if (s.telebirrNumber) document.getElementById('sTelNum').value    = s.telebirrNumber;
+  if (s.telebirrName)   document.getElementById('sTelName').value   = s.telebirrName;
+  if (s.announcement)   document.getElementById('sAnnounce').value  = s.announcement;
+  if (s.tgToken)        document.getElementById('sTgToken').value   = s.tgToken;
+  if (s.tgChatId)       document.getElementById('sTgChatId').value  = s.tgChatId;
+  if (s.tgChannel)      document.getElementById('sTgChannel').value = s.tgChannel;
+  document.getElementById('sTgNotify').checked = !!s.tgNotify;
+  updateTgStatus(s);
+}
+
+function saveTelebirr() {
+  const s = getSettings();
+  const num  = document.getElementById('sTelNum').value.trim();
+  const name = document.getElementById('sTelName').value.trim();
+  if (!num && !name) { toast('⚠️ Enter at least one field'); return; }
+  if (num)  s.telebirrNumber = num;
+  if (name) s.telebirrName   = name;
+  saveSettings(s);
+  toast('✅ Telebirr details saved!');
+}
+
+function saveAnnouncement() {
+  const s = getSettings();
+  s.announcement = document.getElementById('sAnnounce').value.trim();
+  saveSettings(s);
+  toast('✅ Announcement saved! Users will see it on Home.');
+}
+
+function clearAnnouncement() {
+  const s = getSettings();
+  s.announcement = '';
+  saveSettings(s);
+  document.getElementById('sAnnounce').value = '';
+  toast('🗑️ Announcement cleared.');
+}
+
+function saveTelegramSettings() {
+  const s = getSettings();
+  s.tgToken   = document.getElementById('sTgToken').value.trim();
+  s.tgChatId  = document.getElementById('sTgChatId').value.trim();
+  s.tgChannel = document.getElementById('sTgChannel').value.trim();
+  s.tgNotify  = document.getElementById('sTgNotify').checked;
+  saveSettings(s);
+  updateTgStatus(s);
+  updateTgBanner();
+  toast('✅ Telegram settings saved!');
+}
+
+function updateTgStatus(s) {
+  const dot  = document.getElementById('tgDot');
+  const text = document.getElementById('tgStatusText');
+  if (s && s.tgToken && s.tgToken.length > 20) {
+    dot.className  = 'tg-dot connected';
+    text.innerHTML = '<span style="color:var(--green)">Connected</span> — Bot token saved';
+  } else {
+    dot.className  = 'tg-dot disconnected';
+    text.innerHTML = 'Not connected — enter Bot Token below';
+  }
+}
+
+function updateTgBanner() {
+  const s = getSettings();
+  const banner = document.getElementById('tg-banner');
+  if (banner) banner.style.display = (s.tgToken && s.tgToken.length > 20) ? '' : 'none';
+}
+
+async function testTelegramBot() {
+  const token  = document.getElementById('sTgToken').value.trim();
+  const chatId = document.getElementById('sTgChatId').value.trim();
+  if (!token) { toast('⚠️ Enter a Bot Token first.'); return; }
+  if (!chatId) { toast('⚠️ Enter your Chat ID first.'); return; }
+
+  toast('🔄 Sending test message…');
+  try {
+    const res = await fetch(`https://api.telegram.org/bot${token}/sendMessage`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        chat_id: chatId,
+        text: '✅ *IMX World Admin* — Telegram bot connected successfully! 🎉',
+        parse_mode: 'Markdown',
+      })
+    });
+    const data = await res.json();
+    if (data.ok) {
+      toast('✅ Test message sent to your Telegram!');
+      saveTelegramSettings();
+    } else {
+      toast('❌ Error: ' + (data.description || 'Unknown error'));
+    }
+  } catch(e) {
+    toast('❌ Network error. Check token and try again.');
+  }
+}
+
+async function sendTgNotification(msg) {
+  const s = getSettings();
+  if (!s.tgToken || !s.tgChatId || !s.tgNotify) return;
+  try {
+    await fetch(`https://api.telegram.org/bot${s.tgToken}/sendMessage`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ chat_id: s.tgChatId, text: msg, parse_mode: 'Markdown' })
+    });
+  } catch(e) { /* silent fail */ }
+}
+
+function changePassword() {
+  const cur  = document.getElementById('sCurPw').value;
+  const nw   = document.getElementById('sNewPw').value;
+  const conf = document.getElementById('sConPw').value;
+  const msg  = document.getElementById('pwMsg');
+  if (cur !== getPw())   { msg.style.color='#FF5050'; msg.textContent='❌ Current password is incorrect.'; return; }
+  if (nw.length < 6)     { msg.style.color='#FF5050'; msg.textContent='❌ New password must be at least 6 characters.'; return; }
+  if (nw !== conf)        { msg.style.color='#FF5050'; msg.textContent='❌ New passwords do not match.'; return; }
+  localStorage.setItem(ADMIN_PW_KEY, nw);
+  ['sCurPw','sNewPw','sConPw'].forEach(id => document.getElementById(id).value = '');
+  msg.style.color = '#1DB954';
+  msg.textContent = '✅ Password changed successfully!';
+  setTimeout(() => msg.textContent = '', 3000);
+}
+
+function clearSubmissions() {
+  if (!confirm('⚠️ Delete ALL submissions? This cannot be undone.')) return;
+  localStorage.removeItem(SUBMISSIONS_KEY);
+  refreshAll();
+  toast('🗑️ All submissions cleared.');
+}
+
+function clearUsers() {
+  if (!confirm('⚠️ Delete ALL registered phone numbers? This cannot be undone.')) return;
+  localStorage.removeItem(PHONES_KEY);
+  renderUsers();
+  updateStats();
+  toast('🗑️ All users cleared.');
+}
+
+// ── Lightbox ──────────────────────────────────
+function openLB(id) {
+  const s = getSubs().find(s => s.id === id);
+  if (!s || !s.screenshotData) return;
+  document.getElementById('lbImg').src = s.screenshotData;
+  document.getElementById('lightbox').classList.add('show');
+}
+function closeLB() { document.getElementById('lightbox').classList.remove('show'); }
+
+// ── Toast ─────────────────────────────────────
+function toast(msg) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  setTimeout(() => t.classList.remove('show'), 2600);
+}
+
+// ── Helpers ───────────────────────────────────
+function emptyState(icon, msg) {
+  return `<div class="empty"><div class="empty-icon">${icon}</div><p>${msg}</p></div>`;
+}
+
+function pillHtml(status) {
+  const map = {
+    pending:       '<span class="pill pill-pending">⏳ Pending</span>',
+    approved:      '<span class="pill pill-approved">✅ Approved</span>',
+    rejected:      '<span class="pill pill-rejected">❌ Rejected</span>',
+    sent:          '<span class="pill pill-sent">💸 Paid</span>',
+    processing:    '<span class="pill pill-approved">⚙️ Processing</span>',
+    auto_approved: '<span class="pill pill-auto">Auto ✓</span>',
+  };
+  return map[status] || `<span class="pill">${status}</span>`;
+}
+
+// Close modal on overlay click
+document.getElementById('taskModal').addEventListener('click', function(e) {
+  if (e.target === this) closeTaskModal();
+});
+
+// Auto-refresh every 15s
+setInterval(() => {
+  if (sessionStorage.getItem(SESSION_KEY) === '1') updateStats();
+}, 15000);
+</script>
+</body>
+</html>

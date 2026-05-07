@@ -1,0 +1,1942 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>IMX World</title>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:ital,wght@0,300;0,400;0,500;1,300&display=swap" rel="stylesheet">
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+:root {
+  --gold: #D4A017;
+  --gold-light: #F5C842;
+  --gold-dim: #8C6A00;
+  --gold-bg: rgba(212,160,23,0.1);
+  --green: #1DB954;
+  --green-dark: #148040;
+  --red: #FF5050;
+  --bg: #0A0A0A;
+  --surface: #111111;
+  --surface2: #181818;
+  --surface3: #222222;
+  --border: rgba(255,255,255,0.08);
+  --border-gold: rgba(212,160,23,0.25);
+  --text: #F0EDE6;
+  --muted: #777;
+  --muted2: #555;
+  --radius: 16px;
+  --nav-h: 68px;
+  --safe-bottom: env(safe-area-inset-bottom, 0px);
+}
+html, body { height: 100%; overflow: hidden; font-family: 'DM Sans', sans-serif; background: var(--bg); color: var(--text); -webkit-tap-highlight-color: transparent; }
+h1,h2,h3,h4,h5 { font-family: 'Syne', sans-serif; }
+#app { position: relative; width: 100%; max-width: 430px; margin: 0 auto; height: 100dvh; overflow: hidden; background: var(--bg); box-shadow: 0 0 80px rgba(0,0,0,0.8); }
+@media (min-width: 431px) { body { display: flex; align-items: center; justify-content: center; background: #050505; } #app { height: min(100dvh, 860px); border-radius: 40px; border: 1px solid rgba(255,255,255,0.06); overflow: hidden; } }
+.screen { position: absolute; inset: 0; overflow-y: auto; overflow-x: hidden; -webkit-overflow-scrolling: touch; transition: opacity 0.3s ease, transform 0.3s ease; will-change: transform, opacity; }
+.screen.hidden { opacity: 0; pointer-events: none; transform: translateX(20px); }
+.screen.out-left { opacity: 0; pointer-events: none; transform: translateX(-20px); }
+.screen-content { padding-bottom: calc(var(--nav-h) + var(--safe-bottom) + 16px); min-height: 100%; }
+/* AUTH */
+#screen-auth { background: var(--bg); display: flex; flex-direction: column; }
+.auth-bg { position: absolute; inset: 0; pointer-events: none; background-image: linear-gradient(rgba(212,160,23,0.03) 1px, transparent 1px), linear-gradient(90deg, rgba(212,160,23,0.03) 1px, transparent 1px); background-size: 40px 40px; }
+.auth-glow { position: absolute; top: -100px; left: 50%; transform: translateX(-50%); width: 400px; height: 400px; background: radial-gradient(circle, rgba(212,160,23,0.15) 0%, transparent 65%); pointer-events: none; }
+.auth-inner { position: relative; display: flex; flex-direction: column; align-items: center; justify-content: center; min-height: 100dvh; padding: 40px 24px; }
+.auth-logo { font-family: 'Syne', sans-serif; font-size: 32px; font-weight: 800; letter-spacing: -1px; margin-bottom: 6px; }
+.auth-logo span { color: var(--gold); }
+.auth-tagline { font-size: 13px; color: var(--muted); letter-spacing: 0.5px; margin-bottom: 40px; text-align: center; }
+.auth-card { width: 100%; background: var(--surface); border: 1px solid var(--border-gold); border-radius: 24px; padding: 28px 24px 24px; }
+.auth-toggle { display: flex; gap: 2px; background: var(--surface2); border-radius: 12px; padding: 3px; margin-bottom: 24px; }
+.auth-toggle-btn { flex: 1; padding: 10px 8px; font-family: 'Syne', sans-serif; font-size: 13px; font-weight: 700; border: none; background: transparent; color: var(--muted); border-radius: 10px; cursor: pointer; transition: all 0.2s; }
+.auth-toggle-btn.active { background: var(--surface3); color: var(--text); }
+.form-group { margin-bottom: 14px; }
+.form-group label { font-size: 11px; letter-spacing: 0.8px; text-transform: uppercase; color: var(--muted); display: block; margin-bottom: 6px; }
+.form-group input { width: 100%; background: var(--surface2); border: 1px solid var(--border); color: var(--text); padding: 14px 16px; border-radius: 12px; font-size: 15px; font-family: 'DM Sans', sans-serif; outline: none; min-height: 50px; transition: border-color 0.2s; }
+.form-group input::placeholder { color: var(--muted2); }
+.form-group input:focus { border-color: rgba(212,160,23,0.5); }
+.auth-btn { width: 100%; background: var(--gold); color: #000; font-family: 'Syne', sans-serif; font-weight: 800; font-size: 15px; border: none; padding: 16px; border-radius: 12px; cursor: pointer; transition: background 0.2s; min-height: 52px; margin-top: 6px; letter-spacing: 0.2px; }
+.auth-btn:hover, .auth-btn:active { background: var(--gold-light); }
+.auth-bonus-pill { display: flex; align-items: center; gap: 8px; background: rgba(29,185,84,0.08); border: 1px solid rgba(29,185,84,0.2); border-radius: 100px; padding: 8px 16px; margin-top: 16px; font-size: 12px; color: var(--green); justify-content: center; }
+.auth-bonus-pill strong { color: var(--gold-light); }
+/* STATUS BAR */
+.status-bar { display: flex; align-items: center; justify-content: space-between; padding: 12px 20px 6px; font-size: 13px; font-weight: 600; font-family: 'Syne', sans-serif; flex-shrink: 0; }
+.status-time { color: var(--text); }
+.status-icons { display: flex; gap: 6px; align-items: center; color: var(--text); font-size: 12px; }
+/* TOP BAR */
+.top-bar { display: flex; align-items: center; justify-content: space-between; padding: 8px 20px 12px; flex-shrink: 0; }
+.top-bar-logo { font-family:'Syne',sans-serif; font-size:18px; font-weight:800; letter-spacing:-0.5px; }
+.top-bar-logo span { color: var(--gold); }
+.top-bar-title { font-family:'Syne',sans-serif; font-size:17px; font-weight:700; }
+.top-bar-back { width: 36px; height: 36px; border-radius: 50%; background: var(--surface2); border: 1px solid var(--border); display: flex; align-items: center; justify-content: center; cursor: pointer; font-size: 16px; color: var(--text); }
+.avatar-btn { width: 36px; height: 36px; border-radius: 50%; background: var(--gold); color: #000; font-family: 'Syne',sans-serif; font-weight: 800; font-size: 15px; display: flex; align-items: center; justify-content: center; cursor: pointer; border: none; flex-shrink: 0; }
+/* NAV */
+#bottom-nav { position: absolute; bottom: 0; left: 0; right: 0; height: calc(var(--nav-h) + var(--safe-bottom)); padding-bottom: var(--safe-bottom); background: rgba(10,10,10,0.96); backdrop-filter: blur(20px); border-top: 1px solid var(--border); display: none; align-items: flex-start; justify-content: space-around; padding-top: 8px; z-index: 100; }
+#bottom-nav.visible { display: flex; }
+.nav-item { display: flex; flex-direction: column; align-items: center; gap: 4px; cursor: pointer; padding: 4px 12px; border-radius: 12px; transition: all 0.2s; border: none; background: none; color: var(--muted); min-width: 60px; }
+.nav-item.active { color: var(--gold); }
+.nav-icon { font-size: 22px; line-height: 1; }
+.nav-label { font-family: 'Syne',sans-serif; font-size: 10px; font-weight: 700; letter-spacing: 0.3px; }
+.nav-dot { position: absolute; top: -2px; right: -2px; width: 8px; height: 8px; border-radius: 50%; background: var(--gold); border: 2px solid var(--bg); }
+.nav-icon-wrap { position: relative; display: inline-flex; }
+/* HOME */
+.balance-hero { margin: 0 16px 16px; background: linear-gradient(135deg, #1a1200 0%, #111111 50%, #0a0e00 100%); border: 1px solid var(--border-gold); border-radius: 24px; padding: 24px; position: relative; overflow: hidden; }
+.balance-hero::before { content:''; position: absolute; top: -40px; right: -40px; width: 160px; height: 160px; background: radial-gradient(circle, rgba(212,160,23,0.2) 0%, transparent 70%); pointer-events: none; }
+.balance-lbl { font-size: 11px; color: var(--muted); letter-spacing: 1.5px; text-transform: uppercase; margin-bottom: 8px; }
+.balance-amount { font-family: 'Syne',sans-serif; font-size: 52px; font-weight: 800; color: var(--gold-light); letter-spacing: -2px; line-height: 1; margin-bottom: 4px; }
+.balance-currency { font-size: 13px; color: var(--muted); margin-bottom: 16px; }
+.balance-row { display: flex; gap: 2px; border-radius: 10px; overflow: hidden; }
+.bal-chip { flex: 1; background: rgba(255,255,255,0.04); padding: 10px 8px; text-align: center; }
+.bal-chip-val { font-family: 'Syne',sans-serif; font-size: 14px; font-weight: 700; color: var(--gold-light); display: block; }
+.bal-chip-lbl { font-size: 10px; color: var(--muted); margin-top: 2px; }
+.locked-chip { color: var(--muted2) !important; }
+.quick-actions { display: grid; grid-template-columns: repeat(4,1fr); gap: 10px; margin: 0 16px 20px; }
+.qa-btn { background: var(--surface); border: 1px solid var(--border); border-radius: 14px; padding: 14px 8px; display: flex; flex-direction: column; align-items: center; gap: 6px; cursor: pointer; transition: all 0.2s; border: none; color: var(--text); }
+.qa-btn:active { background: var(--surface2); transform: scale(0.96); }
+.qa-icon { font-size: 22px; }
+.qa-label { font-family:'Syne',sans-serif; font-size: 10px; font-weight: 700; color: var(--muted); }
+.section-hd { display: flex; align-items: center; justify-content: space-between; padding: 0 16px; margin-bottom: 12px; }
+.section-hd h3 { font-size: 14px; font-weight: 700; color: var(--text); }
+.section-hd a { font-size: 12px; color: var(--gold); cursor: pointer; }
+.home-steps { margin: 0 16px 20px; display: flex; flex-direction: column; gap: 2px; border-radius: 16px; overflow: hidden; border: 1px solid var(--border); }
+.home-step { display: flex; align-items: center; gap: 14px; background: var(--surface); padding: 14px 16px; transition: background 0.2s; }
+.home-step.done { background: var(--surface); }
+.home-step.active-step { background: rgba(212,160,23,0.05); border-left: 2px solid var(--gold); }
+.home-step.locked-step { opacity: 0.5; }
+.step-circle { width: 32px; height: 32px; border-radius: 50%; flex-shrink: 0; display: flex; align-items: center; justify-content: center; font-size: 14px; border: 1.5px solid var(--border); }
+.step-circle.done-c { background: rgba(29,185,84,0.15); border-color: rgba(29,185,84,0.4); }
+.step-circle.active-c { background: rgba(212,160,23,0.15); border-color: rgba(212,160,23,0.4); }
+.step-circle.lock-c { background: var(--surface2); }
+.step-text { flex: 1; }
+.step-text-title { font-family:'Syne',sans-serif; font-size: 13px; font-weight: 700; }
+.step-text-sub { font-size: 11px; color: var(--muted); margin-top: 2px; }
+.step-reward { font-family:'Syne',sans-serif; font-size: 12px; font-weight: 700; color: var(--gold); background: rgba(212,160,23,0.1); padding: 3px 10px; border-radius: 100px; }
+.notif-card { margin: 0 16px 20px; background: rgba(29,185,84,0.08); border: 1px solid rgba(29,185,84,0.2); border-radius: 14px; padding: 14px 16px; display: flex; align-items: flex-start; gap: 12px; }
+.notif-icon { font-size: 20px; flex-shrink: 0; margin-top: 1px; }
+.notif-body h4 { font-size: 13px; font-weight: 600; color: var(--text); margin-bottom: 2px; }
+.notif-body p { font-size: 12px; color: var(--muted); line-height: 1.5; }
+/* WITHDRAW */
+.withdraw-payout-tracker { margin: 0 16px 20px; background: var(--surface); border: 1px solid var(--border-gold); border-radius: 20px; padding: 20px; }
+.tracker-title { font-size: 11px; letter-spacing: 1.5px; text-transform: uppercase; color: var(--gold); font-weight: 600; margin-bottom: 18px; }
+.tracker-steps { display: flex; flex-direction: column; gap: 0; }
+.tracker-step { display: flex; align-items: flex-start; gap: 14px; position: relative; }
+.tracker-step:not(:last-child)::before { content: ''; position: absolute; left: 15px; top: 32px; width: 2px; height: calc(100% - 10px); background: var(--border); }
+.tracker-step.ts-done:not(:last-child)::before { background: var(--green); }
+.tracker-step.ts-active:not(:last-child)::before { background: linear-gradient(var(--gold), var(--border)); }
+.ts-dot-wrap { position: relative; flex-shrink: 0; padding-top: 4px; padding-bottom: 20px; }
+.ts-dot { width: 30px; height: 30px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 13px; border: 2px solid var(--border); background: var(--surface2); }
+.ts-done .ts-dot { background: rgba(29,185,84,0.15); border-color: rgba(29,185,84,0.5); }
+.ts-active .ts-dot { background: rgba(212,160,23,0.15); border-color: rgba(212,160,23,0.6); box-shadow: 0 0 12px rgba(212,160,23,0.3); }
+.ts-pending .ts-dot { background: var(--surface2); border-color: var(--border); opacity: 0.5; }
+.ts-body { flex: 1; padding-bottom: 20px; }
+.ts-name { font-family:'Syne',sans-serif; font-size: 13px; font-weight: 700; margin-bottom: 2px; }
+.ts-done .ts-name { color: var(--green); }
+.ts-active .ts-name { color: var(--gold-light); }
+.ts-pending .ts-name { color: var(--muted); }
+.ts-desc { font-size: 12px; color: var(--muted); line-height: 1.5; }
+.ts-badge { display: inline-block; margin-top: 6px; font-size: 10px; letter-spacing: 0.5px; text-transform: uppercase; padding: 3px 10px; border-radius: 100px; font-weight: 600; }
+.ts-done .ts-badge { background: rgba(29,185,84,0.1); color: var(--green); }
+.ts-active .ts-badge { background: rgba(212,160,23,0.1); color: var(--gold); }
+.ts-pending .ts-badge { background: rgba(255,255,255,0.04); color: var(--muted2); }
+.ts-active-pulse { display: inline-flex; align-items: center; gap: 6px; margin-top: 8px; font-size: 11px; color: var(--gold); }
+.pulse-dot { width: 7px; height: 7px; border-radius: 50%; background: var(--gold); animation: pulse 1.5s ease-in-out infinite; }
+@keyframes pulse { 0%,100%{opacity:1;transform:scale(1)} 50%{opacity:0.4;transform:scale(0.8)} }
+.ref-mini-progress { margin-top: 8px; }
+.ref-mini-track { display: flex; gap: 4px; margin-bottom: 4px; }
+.ref-mini-dot { flex: 1; height: 4px; border-radius: 2px; background: var(--surface3); transition: background 0.3s; }
+.ref-mini-dot.filled { background: var(--green); }
+.ref-mini-label { font-size: 11px; color: var(--muted); }
+.withdraw-form-card { margin: 0 16px 20px; background: var(--surface); border: 1px solid var(--border); border-radius: 20px; padding: 20px; }
+.withdraw-form-card h3 { font-family:'Syne',sans-serif; font-size: 15px; font-weight: 700; margin-bottom: 4px; }
+.withdraw-form-card p { font-size: 12px; color: var(--muted); margin-bottom: 18px; line-height: 1.5; }
+.lock-banner { background: rgba(255,80,80,0.06); border: 1px solid rgba(255,80,80,0.18); border-radius: 10px; padding: 12px 14px; margin-bottom: 16px; font-size: 12px; color: #FF7070; line-height: 1.5; }
+.unlock-banner { background: rgba(29,185,84,0.06); border: 1px solid rgba(29,185,84,0.2); border-radius: 10px; padding: 12px 14px; margin-bottom: 16px; font-size: 12px; color: var(--green); line-height: 1.5; }
+.primary-btn { width: 100%; background: var(--gold); color: #000; font-family:'Syne',sans-serif; font-weight: 800; font-size: 15px; border: none; padding: 15px; border-radius: 12px; cursor: pointer; transition: all 0.2s; min-height: 50px; }
+.primary-btn:hover, .primary-btn:active { background: var(--gold-light); }
+.primary-btn:disabled { background: var(--surface3); color: var(--muted); cursor: not-allowed; }
+.secondary-btn { width: 100%; background: transparent; color: var(--muted); font-family:'DM Sans',sans-serif; font-weight: 500; font-size: 14px; border: 1px solid var(--border); padding: 13px; border-radius: 12px; cursor: pointer; transition: all 0.2s; min-height: 48px; margin-top: 10px; }
+.secondary-btn:hover { border-color: rgba(255,255,255,0.25); color: var(--text); }
+/* INVITE */
+.invite-hero { margin: 0 16px 16px; background: linear-gradient(135deg, #0a1a00 0%, #111111 100%); border: 1px solid rgba(29,185,84,0.2); border-radius: 20px; padding: 22px; text-align: center; }
+.invite-hero h2 { font-size: 20px; font-weight: 800; margin-bottom: 6px; }
+.invite-hero p { font-size: 13px; color: var(--muted); margin-bottom: 16px; line-height: 1.5; }
+.ref-dots-row { display: flex; gap: 10px; justify-content: center; margin-bottom: 12px; }
+.ref-dot-big { width: 52px; height: 52px; border-radius: 50%; border: 2px solid var(--border); background: var(--surface2); display: flex; align-items: center; justify-content: center; font-size: 20px; transition: all 0.3s; }
+.ref-dot-big.filled { background: rgba(29,185,84,0.15); border-color: rgba(29,185,84,0.5); }
+.ref-count-text { font-family:'Syne',sans-serif; font-size: 13px; color: var(--muted); }
+.ref-count-text span { color: var(--gold-light); font-weight: 700; }
+.invite-link-box { margin: 0 16px 14px; background: var(--surface2); border: 1px solid var(--border-gold); border-radius: 14px; padding: 14px; display: flex; align-items: center; gap: 10px; }
+.invite-link-text { flex: 1; font-size: 12px; color: var(--muted); word-break: break-all; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.icon-btn { width: 40px; height: 40px; border-radius: 10px; background: var(--surface3); border: 1px solid var(--border); color: var(--text); font-size: 16px; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: all 0.2s; flex-shrink: 0; }
+.icon-btn:hover { background: var(--gold); color: #000; }
+.invite-how { margin: 0 16px 20px; background: var(--surface); border: 1px solid var(--border); border-radius: 16px; overflow: hidden; }
+.invite-how-row { display: flex; align-items: center; gap: 14px; padding: 14px 16px; border-bottom: 1px solid var(--border); }
+.invite-how-row:last-child { border-bottom: none; }
+.invite-how-num { width: 28px; height: 28px; border-radius: 50%; flex-shrink: 0; background: var(--gold-bg); border: 1px solid var(--border-gold); display: flex; align-items: center; justify-content: center; font-family:'Syne',sans-serif; font-size: 12px; font-weight: 700; color: var(--gold); }
+.invite-how-text h4 { font-size: 13px; font-weight: 600; margin-bottom: 2px; }
+.invite-how-text p { font-size: 12px; color: var(--muted); }
+/* PROFILE */
+.profile-avatar-row { display: flex; flex-direction: column; align-items: center; padding: 24px 16px 16px; gap: 10px; }
+.profile-avatar { width: 72px; height: 72px; border-radius: 50%; background: linear-gradient(135deg, var(--gold), var(--gold-dim)); display: flex; align-items: center; justify-content: center; font-family:'Syne',sans-serif; font-weight: 800; font-size: 28px; color: #000; box-shadow: 0 0 30px rgba(212,160,23,0.3); }
+.profile-name { font-family:'Syne',sans-serif; font-size: 18px; font-weight: 800; }
+.profile-status { display: flex; align-items: center; gap: 6px; font-size: 12px; color: var(--green); }
+.profile-status::before { content:'●'; font-size: 8px; }
+.info-list-card { margin: 0 16px 14px; background: var(--surface); border: 1px solid var(--border); border-radius: 16px; overflow: hidden; }
+.info-row { display: flex; align-items: center; justify-content: space-between; padding: 14px 16px; border-bottom: 1px solid var(--border); }
+.info-row:last-child { border-bottom: none; }
+.info-row-lbl { font-size: 12px; color: var(--muted); }
+.info-row-val { font-size: 13px; font-weight: 500; color: var(--text); text-align: right; }
+.profile-action-btn { margin: 0 16px 10px; width: calc(100% - 32px); background: var(--surface); border: 1px solid var(--border); border-radius: 14px; padding: 15px 16px; display: flex; align-items: center; justify-content: space-between; cursor: pointer; transition: all 0.2s; color: var(--text); font-family:'DM Sans',sans-serif; font-size: 14px; }
+.profile-action-btn:active { background: var(--surface2); }
+.profile-action-btn span:first-child { display: flex; align-items: center; gap: 10px; }
+.logout-btn { color: var(--red) !important; border-color: rgba(255,80,80,0.15) !important; }
+/* MODAL */
+.modal-overlay { position: absolute; inset: 0; z-index: 200; background: rgba(0,0,0,0.85); display: none; align-items: flex-end; justify-content: center; }
+.modal-overlay.active { display: flex; }
+.modal-sheet { background: var(--surface); border: 1px solid var(--border-gold); border-radius: 24px 24px 0 0; padding: 28px 24px 40px; width: 100%; max-height: 88vh; overflow-y: auto; animation: sheetUp 0.3s ease; position: relative; text-align: center; }
+@keyframes sheetUp { from{transform:translateY(60px);opacity:0} to{transform:translateY(0);opacity:1} }
+.sheet-handle { width: 36px; height: 4px; border-radius: 2px; background: rgba(255,255,255,0.1); margin: 0 auto 20px; }
+.sheet-close { position: absolute; top: 16px; right: 18px; width: 30px; height: 30px; border-radius: 50%; background: rgba(255,255,255,0.06); border: 1px solid var(--border); color: var(--muted); font-size: 16px; cursor: pointer; display: flex; align-items: center; justify-content: center; }
+.modal-emoji { font-size: 44px; display: block; margin-bottom: 10px; }
+.modal-sheet h2 { font-size: 22px; margin-bottom: 8px; }
+.modal-sheet p { font-size: 14px; color: var(--muted); margin-bottom: 8px; line-height: 1.6; }
+.big-num { font-family:'Syne',sans-serif; font-size: 56px; font-weight: 800; color: var(--gold-light); letter-spacing: -2px; display: block; margin: 8px 0; }
+/* Telebirr card */
+.telebirr-card { background: linear-gradient(135deg, #0a1500 0%, #111 100%); border: 1px solid rgba(39,174,96,0.3); border-radius: 14px; padding: 18px; margin: 14px 0; text-align: left; }
+.telebirr-label-sm { font-size: 10px; letter-spacing: 1.5px; text-transform: uppercase; color: #27AE60; font-weight: 600; margin-bottom: 12px; display: flex; align-items: center; gap: 6px; }
+.telebirr-detail-row { display: flex; justify-content: space-between; margin-bottom: 8px; }
+.telebirr-detail-lbl { font-size: 12px; color: var(--muted); }
+.telebirr-detail-val { font-size: 12px; font-weight: 600; color: var(--text); }
+.telebirr-num { font-family:'Syne',sans-serif; font-size: 26px; font-weight: 800; color: #4ECB71; letter-spacing: 4px; display: block; text-align: center; margin: 12px 0 8px; padding: 12px; background: rgba(39,174,96,0.08); border-radius: 8px; border: 1px solid rgba(39,174,96,0.2); }
+.copy-row { display: flex; gap: 8px; justify-content: center; align-items: center; }
+.copy-btn-sm { background: var(--surface3); border: 1px solid var(--border); color: var(--muted); border-radius: 8px; padding: 6px 14px; font-size: 12px; cursor: pointer; transition: all 0.2s; display: flex; align-items: center; gap: 4px; }
+.copy-btn-sm:hover { background: #27AE60; color: #fff; }
+/* UPLOAD */
+.upload-zone { border: 2px dashed var(--border-gold); border-radius: 16px; padding: 28px 16px; display: flex; flex-direction: column; align-items: center; gap: 10px; background: rgba(212,160,23,0.03); cursor: pointer; transition: all 0.2s; margin: 14px 0; text-align: center; position: relative; min-height: 140px; justify-content: center; }
+.upload-zone:hover { background: rgba(212,160,23,0.06); border-color: var(--gold); }
+.upload-zone.has-file { border-color: var(--green); background: rgba(29,185,84,0.05); }
+.upload-icon { font-size: 36px; }
+.upload-label { font-family: 'Syne', sans-serif; font-size: 14px; font-weight: 700; color: var(--text); }
+.upload-sublabel { font-size: 12px; color: var(--muted); }
+.upload-preview { width: 100%; border-radius: 12px; overflow: hidden; max-height: 180px; object-fit: cover; display: none; border: 1px solid var(--border-gold); }
+.upload-filename { font-size: 12px; color: var(--green); font-weight: 600; display: none; word-break: break-all; text-align: center; }
+/* ADMIN REVIEW PANEL */
+.admin-review-panel { background: var(--surface2); border: 1px solid var(--border-gold); border-radius: 14px; padding: 16px; margin: 14px 0; text-align: left; }
+.admin-review-title { font-size: 10px; letter-spacing: 1.5px; text-transform: uppercase; color: var(--gold); font-weight: 600; margin-bottom: 10px; }
+.admin-review-img { width: 100%; border-radius: 10px; max-height: 200px; object-fit: cover; border: 1px solid var(--border); margin-bottom: 12px; display: block; }
+.admin-review-detail { display: flex; justify-content: space-between; margin-bottom: 6px; }
+.admin-review-detail span:first-child { font-size: 12px; color: var(--muted); }
+.admin-review-detail span:last-child { font-size: 12px; font-weight: 600; color: var(--text); }
+.step-pill-row { display: flex; gap: 6px; justify-content: center; margin-bottom: 20px; flex-wrap: wrap; }
+.step-pill { height: 4px; flex: 1; max-width: 40px; border-radius: 2px; background: var(--surface3); transition: background 0.3s; }
+.step-pill.active { background: var(--gold); }
+.step-pill.done { background: var(--green); }
+/* MISC */
+::-webkit-scrollbar { display: none; }
+* { -ms-overflow-style: none; scrollbar-width: none; }
+#toast { position: absolute; bottom: calc(var(--nav-h) + 16px); left: 50%; transform: translateX(-50%) translateY(20px); background: var(--surface3); color: var(--text); border: 1px solid var(--border); border-radius: 100px; padding: 10px 20px; font-size: 13px; font-weight: 500; opacity: 0; transition: all 0.3s; white-space: nowrap; z-index: 300; pointer-events: none; }
+#toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+.deposit-note { font-size: 12px; color: var(--muted); background: rgba(39,174,96,0.05); border: 1px solid rgba(39,174,96,0.15); border-radius: 8px; padding: 10px 12px; line-height: 1.6; text-align: left; margin-top: 10px; }
+.admin-banner { background: rgba(212,160,23,0.08); border: 1px solid var(--border-gold); border-radius: 12px; padding: 10px 14px; margin: 0 16px 14px; font-size: 12px; color: var(--gold); line-height: 1.6; }
+
+/* ═══════════════════════════════════════════
+   ADMIN PANEL STYLES
+═══════════════════════════════════════════ */
+#admin-overlay {
+  display: none;
+  position: fixed;
+  inset: 0;
+  z-index: 9999;
+  background: #080808;
+  overflow-y: auto;
+  font-family: 'DM Sans', sans-serif;
+  color: #F0EDE6;
+}
+#admin-overlay.active { display: block; }
+
+/* Login */
+#admin-login {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 100vh;
+  padding: 40px 24px;
+  background: #080808;
+}
+.admin-login-logo { font-family:'Syne',sans-serif; font-size:28px; font-weight:800; color:#F5C842; margin-bottom:4px; }
+.admin-login-sub { font-size:12px; color:#555; letter-spacing:1px; text-transform:uppercase; margin-bottom:36px; }
+.admin-login-card {
+  width: 100%;
+  max-width: 360px;
+  background: #111;
+  border: 1px solid rgba(212,160,23,0.25);
+  border-radius: 20px;
+  padding: 28px 24px;
+}
+.admin-login-card h2 { font-family:'Syne',sans-serif; font-size:18px; font-weight:700; margin-bottom:6px; }
+.admin-login-card p { font-size:12px; color:#666; margin-bottom:20px; }
+.admin-input {
+  width: 100%;
+  background: #181818;
+  border: 1px solid rgba(255,255,255,0.08);
+  color: #F0EDE6;
+  padding: 13px 16px;
+  border-radius: 11px;
+  font-size: 15px;
+  font-family: 'DM Sans', sans-serif;
+  outline: none;
+  margin-bottom: 14px;
+  transition: border-color 0.2s;
+}
+.admin-input:focus { border-color: rgba(212,160,23,0.5); }
+.admin-login-btn {
+  width: 100%;
+  background: #D4A017;
+  color: #000;
+  font-family: 'Syne', sans-serif;
+  font-weight: 800;
+  font-size: 15px;
+  border: none;
+  padding: 15px;
+  border-radius: 11px;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+.admin-login-btn:hover { background: #F5C842; }
+.admin-login-err { font-size:12px; color:#FF5050; margin-top:10px; text-align:center; display:none; }
+
+/* Dashboard */
+#admin-dashboard { display:none; max-width: 900px; margin: 0 auto; padding: 0 0 60px; }
+.admin-topbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 20px 24px 16px;
+  border-bottom: 1px solid rgba(255,255,255,0.06);
+  position: sticky;
+  top: 0;
+  background: #080808;
+  z-index: 10;
+}
+.admin-topbar-logo { font-family:'Syne',sans-serif; font-size:20px; font-weight:800; color:#F5C842; }
+.admin-topbar-logo span { color:#fff; font-size:11px; font-weight:500; background:#1a1a1a; border:1px solid rgba(255,255,255,0.08); border-radius:100px; padding:3px 10px; margin-left:8px; vertical-align:middle; }
+.admin-logout-btn { background:rgba(255,80,80,0.1); border:1px solid rgba(255,80,80,0.2); color:#FF5050; font-size:12px; font-weight:600; padding:7px 16px; border-radius:100px; cursor:pointer; font-family:'Syne',sans-serif; }
+
+/* Tabs */
+.admin-tabs { display:flex; gap:2px; padding:16px 24px 0; overflow-x:auto; scrollbar-width:none; }
+.admin-tabs::-webkit-scrollbar { display:none; }
+.admin-tab { flex-shrink:0; padding:10px 18px; font-family:'Syne',sans-serif; font-size:12px; font-weight:700; border:1px solid rgba(255,255,255,0.07); background:#111; color:#666; border-radius:100px; cursor:pointer; transition:all 0.2s; white-space:nowrap; }
+.admin-tab.active { background:#D4A017; color:#000; border-color:#D4A017; }
+.admin-tab-badge { display:inline-block; background:rgba(255,80,80,0.8); color:#fff; font-size:9px; font-weight:700; padding:1px 6px; border-radius:100px; margin-left:5px; }
+
+/* Stats row */
+.admin-stats { display:grid; grid-template-columns:repeat(2,1fr); gap:10px; padding:16px 24px; }
+@media(min-width:600px){ .admin-stats { grid-template-columns:repeat(4,1fr); } }
+.stat-card { background:#111; border:1px solid rgba(255,255,255,0.07); border-radius:14px; padding:16px; }
+.stat-val { font-family:'Syne',sans-serif; font-size:26px; font-weight:800; color:#F5C842; }
+.stat-lbl { font-size:11px; color:#555; margin-top:3px; letter-spacing:0.5px; }
+
+/* Section */
+.admin-section { padding:0 24px; display:none; }
+.admin-section.active { display:block; }
+.admin-section-title { font-family:'Syne',sans-serif; font-size:13px; font-weight:700; color:#888; letter-spacing:1px; text-transform:uppercase; margin:20px 0 12px; display:flex; align-items:center; justify-content:space-between; }
+.admin-refresh-btn { font-size:11px; color:#D4A017; cursor:pointer; background:none; border:none; font-family:'DM Sans',sans-serif; }
+
+/* Cards */
+.admin-card { background:#111; border:1px solid rgba(255,255,255,0.07); border-radius:14px; overflow:hidden; margin-bottom:10px; }
+.admin-card-row { display:flex; align-items:flex-start; justify-content:space-between; padding:14px 16px; border-bottom:1px solid rgba(255,255,255,0.05); gap:10px; }
+.admin-card-row:last-child { border-bottom:none; }
+.admin-card-main { flex:1; min-width:0; }
+.admin-card-name { font-family:'Syne',sans-serif; font-size:14px; font-weight:700; margin-bottom:3px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+.admin-card-meta { font-size:11px; color:#555; line-height:1.6; }
+.admin-card-meta span { color:#888; }
+.admin-actions { display:flex; gap:6px; flex-shrink:0; flex-wrap:wrap; justify-content:flex-end; }
+.btn-approve { background:rgba(29,185,84,0.12); border:1px solid rgba(29,185,84,0.3); color:#1DB954; font-size:11px; font-weight:700; padding:6px 12px; border-radius:8px; cursor:pointer; font-family:'Syne',sans-serif; transition:all 0.2s; white-space:nowrap; }
+.btn-approve:hover { background:rgba(29,185,84,0.25); }
+.btn-reject { background:rgba(255,80,80,0.08); border:1px solid rgba(255,80,80,0.2); color:#FF5050; font-size:11px; font-weight:700; padding:6px 12px; border-radius:8px; cursor:pointer; font-family:'Syne',sans-serif; transition:all 0.2s; white-space:nowrap; }
+.btn-reject:hover { background:rgba(255,80,80,0.18); }
+.btn-paid { background:rgba(212,160,23,0.1); border:1px solid rgba(212,160,23,0.3); color:#F5C842; font-size:11px; font-weight:700; padding:6px 12px; border-radius:8px; cursor:pointer; font-family:'Syne',sans-serif; transition:all 0.2s; white-space:nowrap; }
+.btn-paid:hover { background:rgba(212,160,23,0.2); }
+.status-pill { display:inline-block; font-size:10px; font-weight:700; padding:3px 10px; border-radius:100px; letter-spacing:0.4px; text-transform:uppercase; }
+.pill-pending { background:rgba(212,160,23,0.12); color:#F5C842; }
+.pill-approved { background:rgba(29,185,84,0.12); color:#1DB954; }
+.pill-rejected { background:rgba(255,80,80,0.1); color:#FF5050; }
+.pill-sent { background:rgba(0,200,255,0.1); color:#00C8FF; }
+.pill-auto { background:rgba(150,150,255,0.1); color:#aaa; }
+.admin-img-thumb { width:60px; height:60px; border-radius:8px; object-fit:cover; border:1px solid rgba(255,255,255,0.1); cursor:pointer; flex-shrink:0; }
+.admin-empty { text-align:center; padding:40px 20px; color:#444; font-size:13px; }
+
+/* Settings */
+.settings-card { background:#111; border:1px solid rgba(255,255,255,0.07); border-radius:14px; padding:20px; margin-bottom:14px; }
+.settings-card h3 { font-family:'Syne',sans-serif; font-size:14px; font-weight:700; margin-bottom:14px; }
+.settings-row { margin-bottom:12px; }
+.settings-lbl { font-size:11px; color:#666; letter-spacing:0.8px; text-transform:uppercase; margin-bottom:6px; }
+.settings-input { width:100%; background:#181818; border:1px solid rgba(255,255,255,0.08); color:#F0EDE6; padding:12px 14px; border-radius:10px; font-size:14px; font-family:'DM Sans',sans-serif; outline:none; transition:border-color 0.2s; }
+.settings-input:focus { border-color:rgba(212,160,23,0.5); }
+.settings-save-btn { background:#D4A017; color:#000; font-family:'Syne',sans-serif; font-weight:800; font-size:13px; border:none; padding:11px 22px; border-radius:10px; cursor:pointer; transition:background 0.2s; }
+.settings-save-btn:hover { background:#F5C842; }
+.change-pw-link { font-size:12px; color:#D4A017; cursor:pointer; text-decoration:underline; margin-top:8px; display:inline-block; }
+
+/* Image modal */
+#adminImgModal { display:none; position:fixed; inset:0; z-index:10000; background:rgba(0,0,0,0.92); align-items:center; justify-content:center; }
+#adminImgModal.active { display:flex; }
+#adminImgModal img { max-width:90vw; max-height:90vh; border-radius:12px; }
+#adminImgModal .close-img { position:absolute; top:20px; right:20px; color:#fff; font-size:28px; cursor:pointer; background:rgba(0,0,0,0.5); width:40px; height:40px; border-radius:50%; display:flex; align-items:center; justify-content:center; }
+
+</style>
+</head>
+<body>
+<div id="app">
+
+  <!-- AUTH SCREEN -->
+  <div class="screen" id="screen-auth">
+    <div class="auth-bg"></div>
+    <div class="auth-glow"></div>
+    <div class="auth-inner">
+      <div class="auth-logo">IMX<span>World</span></div>
+      <div class="auth-tagline">🇪🇹 Ethiopia's Free-to-Earn Platform</div>
+      <div class="auth-card">
+        <div class="auth-toggle">
+          <button class="auth-toggle-btn active" id="authTabRegister" onclick="setAuthMode('register')">Register Free</button>
+          <button class="auth-toggle-btn" id="authTabLogin" onclick="setAuthMode('login')">Log In</button>
+        </div>
+        <div id="authFormRegister">
+          <div class="form-group"><label>Full Name</label><input type="text" id="regName" placeholder="Your full name"></div>
+          <div class="form-group"><label>Phone Number</label><input type="tel" id="regPhone" placeholder="+251 9XX XXX XXX"></div>
+          <div class="form-group"><label>Password</label><input type="password" id="regPassword" placeholder="Create a password"></div>
+          <div class="form-group"><label>Referral Code <span style="color:var(--gold);font-size:10px">(Optional)</span></label><input type="text" id="regReferralCode" placeholder="e.g. IMXABC123" style="text-transform:uppercase"></div>
+          <button class="auth-btn" onclick="handleRegister()">Create Account →</button>
+          <div class="auth-bonus-pill">🎁 Get <strong>200 ETB</strong> instantly on sign up · <strong style="color:var(--gold-light)">+5 ETB</strong> per referral</div>
+        </div>
+        <div id="authFormLogin" style="display:none">
+          <div class="form-group"><label>Phone Number</label><input type="tel" id="loginPhone" placeholder="+251 9XX XXX XXX"></div>
+          <div class="form-group"><label>Password</label><input type="password" id="loginPassword" placeholder="Your password"></div>
+          <button class="auth-btn" onclick="handleLogin()">Log In →</button>
+          <div class="auth-bonus-pill">💰 Your wallet is waiting for you</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- HOME SCREEN -->
+  <div class="screen hidden" id="screen-home">
+    <div class="screen-content">
+      <div class="status-bar"><span class="status-time" id="statusTime">9:41</span><div class="status-icons"><span>●●●</span><span>WiFi</span><span>🔋</span></div></div>
+      <div class="top-bar">
+        <div class="top-bar-logo">IMX<span>World</span></div>
+        <button class="avatar-btn" id="homeAvatar" onclick="goTo('profile')">U</button>
+      </div>
+      <div id="adminAnnouncementBanner" class="admin-banner" style="display:none"></div>
+      <div class="balance-hero">
+        <div class="balance-lbl">Total Balance</div>
+        <div class="balance-amount" id="homeBalance">500</div>
+        <div class="balance-currency">ETB — Ethiopian Birr</div>
+        <div class="balance-row">
+          <div class="bal-chip"><span class="bal-chip-val">200 ETB</span><div class="bal-chip-lbl">Sign-Up</div></div>
+          <div class="bal-chip"><span class="bal-chip-val">300 ETB</span><div class="bal-chip-lbl">Verify</div></div>
+          <div class="bal-chip"><span class="bal-chip-val" id="homeReferralChip" style="color:var(--muted2)">+0 ETB</span><div class="bal-chip-lbl">Referrals</div></div>
+        </div>
+      </div>
+      <div class="quick-actions">
+        <button class="qa-btn" onclick="goTo('withdraw')"><span class="qa-icon">💳</span><span class="qa-label">Deposit</span></button>
+        <button class="qa-btn" onclick="goTo('withdraw')"><span class="qa-icon">💸</span><span class="qa-label">Withdraw</span></button>
+        <button class="qa-btn" onclick="openSheet('taskSheet')"><span class="qa-icon">📋</span><span class="qa-label">Task</span></button>
+        <button class="qa-btn" onclick="goTo('invite')"><span class="qa-icon">👥</span><span class="qa-label">Invite</span></button>
+      </div>
+      <div class="notif-card" id="homeNotif">
+        <span class="notif-icon">👋</span>
+        <div class="notif-body">
+          <h4 id="homeNotifTitle">Welcome! Invite 3 friends to unlock withdrawal</h4>
+          <p id="homeNotifBody">Share your referral link and complete the steps to receive your 500 ETB payout.</p>
+        </div>
+      </div>
+      <div class="section-hd"><h3>Your Progress</h3></div>
+      <div class="home-steps">
+        <div class="home-step done"><div class="step-circle done-c">✓</div><div class="step-text"><div class="step-text-title">Account Created</div><div class="step-text-sub">Registration complete</div></div><span class="step-reward">200 ETB</span></div>
+        <div class="home-step active-step" id="homeStepVerify"><div class="step-circle active-c">📋</div><div class="step-text"><div class="step-text-title">Identity Verification</div><div class="step-text-sub" id="homeVerifyStatus">Deposit 100 ETB via Telebirr → Get 300 ETB bonus</div></div><span class="step-reward">300 ETB</span></div>
+        <div class="home-step locked-step" id="homeStepReferral"><div class="step-circle lock-c">👥</div><div class="step-text"><div class="step-text-title">Invite 3 Friends</div><div class="step-text-sub" id="homeReferralStatus">0 / 3 invited</div></div><span class="step-reward">+Unlock</span></div>
+        <div class="home-step locked-step" id="homeStepWithdraw"><div class="step-circle lock-c">💸</div><div class="step-text"><div class="step-text-title">Withdraw 500 ETB</div><div class="step-text-sub">Complete steps above first</div></div><span class="step-reward">500 ETB</span></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- WITHDRAW SCREEN -->
+  <div class="screen hidden" id="screen-withdraw">
+    <div class="screen-content">
+      <div class="status-bar"><span class="status-time" id="statusTime2">9:41</span><div class="status-icons"><span>●●●</span><span>WiFi</span><span>🔋</span></div></div>
+      <div class="top-bar">
+        <button class="top-bar-back" onclick="goTo('home')">←</button>
+        <div class="top-bar-title">Withdraw</div>
+        <div style="width:36px"></div>
+      </div>
+      <!-- Deposit Section -->
+      <div id="withdrawDepositSection" style="margin:0 16px 20px">
+        <div style="font-family:'Syne',sans-serif;font-size:11px;letter-spacing:1.5px;text-transform:uppercase;color:#27AE60;font-weight:600;margin-bottom:12px">📱 Make a Deposit via Telebirr</div>
+        <div id="withdrawDepositDoneCard" style="display:none;background:rgba(29,185,84,0.07);border:1px solid rgba(29,185,84,0.2);border-radius:16px;padding:16px;align-items:center;gap:12px">
+          <span style="font-size:24px">✅</span>
+          <div><div style="font-family:'Syne',sans-serif;font-size:13px;font-weight:700;color:var(--green)">Deposit Confirmed</div><div style="font-size:12px;color:var(--muted);margin-top:2px">100 ETB deposited · +300 ETB bonus added</div></div>
+        </div>
+        <div id="withdrawDepositPendingCard" style="display:none;background:rgba(212,160,23,0.07);border:1px solid var(--border-gold);border-radius:16px;padding:16px;align-items:center;gap:12px">
+          <span style="font-size:24px">⏳</span>
+          <div><div style="font-family:'Syne',sans-serif;font-size:13px;font-weight:700;color:var(--gold-light)">Awaiting Admin Confirmation</div><div style="font-size:12px;color:var(--muted);margin-top:2px">Your 100 ETB Telebirr payment is under review</div></div>
+        </div>
+        <div id="withdrawDepositActionCard" style="background:var(--surface);border:1px solid rgba(39,174,96,0.3);border-radius:16px;padding:18px">
+          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px">
+            <div><div style="font-family:'Syne',sans-serif;font-size:14px;font-weight:700">Deposit 100 ETB via Telebirr</div><div style="font-size:12px;color:var(--muted);margin-top:2px">Get +300 ETB bonus instantly</div></div>
+            <div style="background:rgba(29,185,84,0.1);border:1px solid rgba(29,185,84,0.25);border-radius:100px;padding:4px 12px;font-family:'Syne',sans-serif;font-size:12px;font-weight:700;color:var(--green)">+300 ETB</div>
+          </div>
+          <button class="primary-btn" style="background:#27AE60;flex:1;padding:12px;font-size:13px" onclick="openSheet('depositSheet')">📱 Deposit via Telebirr Now</button>
+        </div>
+      </div>
+      <!-- Payout Tracker -->
+      <div class="withdraw-payout-tracker">
+        <div class="tracker-title">📊 Payout Progress Tracker</div>
+        <div class="tracker-steps">
+          <div class="tracker-step ts-done" id="ts-registered"><div class="ts-dot-wrap"><div class="ts-dot">✓</div></div><div class="ts-body"><div class="ts-name">Account Created</div><div class="ts-desc">Registration complete. 200 ETB added to your wallet.</div><span class="ts-badge">Completed</span></div></div>
+          <div class="tracker-step ts-active" id="ts-deposit">
+            <div class="ts-dot-wrap"><div class="ts-dot" id="tsDotDeposit">📱</div></div>
+            <div class="ts-body">
+              <div id="tsDepositDoneCard" style="display:none;background:rgba(29,185,84,0.07);border:1px solid rgba(29,185,84,0.22);border-radius:14px;padding:14px 16px;align-items:center;gap:12px"><span style="font-size:22px">✅</span><div><div style="font-family:'Syne',sans-serif;font-size:13px;font-weight:700;color:var(--green)">Deposit Confirmed</div><div style="font-size:12px;color:var(--muted);margin-top:2px">100 ETB deposited · +300 ETB bonus added</div><span class="ts-badge" style="margin-top:6px">Completed</span></div></div>
+              <div id="tsDepositPendingCard" style="display:none;background:rgba(212,160,23,0.07);border:1px solid var(--border-gold);border-radius:14px;padding:14px 16px"><div style="font-family:'Syne',sans-serif;font-size:13px;font-weight:700;color:var(--gold-light)">Awaiting Admin Confirmation</div><div style="font-size:12px;color:var(--muted);margin-top:2px">Payment sent via Telebirr. Admin reviewing your 100 ETB deposit.</div><div class="ts-active-pulse" style="margin-top:8px"><span class="pulse-dot"></span> Waiting for admin confirmation…</div></div>
+              <div id="tsDepositActionCard" style="background:var(--surface2);border:1px solid rgba(39,174,96,0.3);border-radius:14px;padding:14px 16px"><div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px"><div><div style="font-family:'Syne',sans-serif;font-size:14px;font-weight:700;color:var(--text)">Deposit 100 ETB via Telebirr</div><div style="font-size:12px;color:var(--muted);margin-top:3px">Get +300 ETB bonus instantly</div></div><div style="background:rgba(29,185,84,0.12);border:1px solid rgba(29,185,84,0.28);border-radius:100px;padding:5px 13px;font-family:'Syne',sans-serif;font-size:12px;font-weight:700;color:var(--green);white-space:nowrap">+300 ETB</div></div><button onclick="openSheet('depositSheet')" style="width:100%;background:#27AE60;color:#fff;font-family:'Syne',sans-serif;font-weight:800;font-size:14px;border:none;padding:13px;border-radius:11px;cursor:pointer">📱 Deposit via Telebirr</button></div>
+            </div>
+          </div>
+          <div class="tracker-step ts-pending" id="ts-verified"><div class="ts-dot-wrap"><div class="ts-dot" id="tsDotVerified">📋</div></div><div class="ts-body"><div class="ts-name">Identity Verified</div><div class="ts-desc">Admin approves your screenshot. 300 ETB bonus added.</div><span class="ts-badge">Pending</span></div></div>
+          <div class="tracker-step ts-pending" id="ts-referrals">
+            <div class="ts-dot-wrap"><div class="ts-dot" id="tsDotRef">👥</div></div>
+            <div class="ts-body"><div class="ts-name">3 Referrals Complete</div><div class="ts-desc">Invite 3 friends to register. Unlocks your withdrawal.</div>
+              <div class="ref-mini-progress" id="tsRefProgress"><div class="ref-mini-track"><div class="ref-mini-dot" id="refD1"></div><div class="ref-mini-dot" id="refD2"></div><div class="ref-mini-dot" id="refD3"></div></div><div class="ref-mini-label"><span id="tsRefCount">0</span> / 3 friends invited</div></div>
+              <span class="ts-badge" id="tsBadgeRef">Locked</span>
+            </div>
+          </div>
+          <div class="tracker-step ts-pending" id="ts-submitted"><div class="ts-dot-wrap"><div class="ts-dot" id="tsDotSubmit">📤</div></div><div class="ts-body"><div class="ts-name">Request Submitted</div><div class="ts-desc">Withdrawal request sent to admin for processing.</div><span class="ts-badge" id="tsBadgeSubmit">Waiting</span></div></div>
+          <div class="tracker-step ts-pending" id="ts-processing"><div class="ts-dot-wrap"><div class="ts-dot">⚙️</div></div><div class="ts-body"><div class="ts-name">Admin Processing</div><div class="ts-desc">Referrals verified. Payment being prepared within 24 hours.</div><span class="ts-badge">Queued</span></div></div>
+          <div class="tracker-step ts-pending" id="ts-paid"><div class="ts-dot-wrap"><div class="ts-dot">📱</div></div><div class="ts-body"><div class="ts-name">Payment Sent via Telebirr</div><div class="ts-desc">500 ETB transferred to your Telebirr account. SMS confirmation sent.</div><span class="ts-badge">Final Step</span></div></div>
+        </div>
+      </div>
+      <!-- Withdraw Form -->
+      <div class="withdraw-form-card">
+        <h3>Request Your Payout</h3>
+        <p>Complete all steps above, then enter your Telebirr number to receive your 500 ETB.</p>
+        <div id="withdrawStatusBanner" class="lock-banner">🔒 Complete all steps above to unlock withdrawal</div>
+        <div class="form-group"><label>Telebirr Phone Number</label><input type="tel" id="withdrawTelebirr" placeholder="+251 9XX XXX XXX" maxlength="14"></div>
+        <div class="form-group"><label>Full Name on Account</label><input type="text" id="withdrawName" placeholder="Your full name"></div>
+        <button class="primary-btn" id="withdrawBtn" onclick="handleWithdraw()" disabled style="background:#27AE60">Submit Withdrawal Request →</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- INVITE SCREEN -->
+  <div class="screen hidden" id="screen-invite">
+    <div class="screen-content">
+      <div class="status-bar"><span class="status-time">9:41</span><div class="status-icons"><span>●●●</span><span>WiFi</span><span>🔋</span></div></div>
+      <div class="top-bar"><button class="top-bar-back" onclick="goTo('home')">←</button><div class="top-bar-title">Invite Friends</div><div style="width:36px"></div></div>
+      <div class="invite-hero">
+        <h2>Invite 3 Friends 👥</h2>
+        <p id="inviteHeroDesc">Share your unique link. Earn <strong style="color:var(--gold-light)">+5 ETB</strong> per referral — unlock your 500 ETB withdrawal once 3 friends register and earn a <strong style="color:var(--green)">150 ETB milestone bonus</strong>.</p>
+        <div id="inviteLockedNotice" style="display:none;background:rgba(212,160,23,0.08);border:1px solid var(--border-gold);border-radius:12px;padding:12px 14px;font-size:12px;color:var(--gold);margin-bottom:12px;text-align:left;line-height:1.6">🔒 <strong>Referral sharing unlocks after your Telebirr deposit is confirmed by admin.</strong></div>
+        <div class="ref-dots-row">
+          <div class="ref-dot-big" id="bigRef1">👤</div>
+          <div class="ref-dot-big" id="bigRef2">👤</div>
+          <div class="ref-dot-big" id="bigRef3">👤</div>
+        </div>
+        <div class="ref-count-text"><span id="inviteRefCount">0</span> / 3 friends joined · <span style="color:var(--gold-light);font-weight:700" id="inviteRefBonus">+0 ETB</span> earned</div>
+      </div>
+      <div class="invite-link-box">
+        <span class="invite-link-text" id="inviteLink">https://imxworld.et/ref/YOURCODE</span>
+        <button class="icon-btn" onclick="copyLink()" title="Copy">📋</button>
+      </div>
+      <div style="margin:0 16px 14px;display:flex;gap:10px"><button class="primary-btn" style="flex:1" onclick="shareLink()">📤 Share Link</button></div>
+      <div class="section-hd"><h3>How it works</h3></div>
+      <div class="invite-how">
+        <div class="invite-how-row"><div class="invite-how-num">1</div><div class="invite-how-text"><h4>Share your link</h4><p>Send your unique referral link to friends via WhatsApp, Telegram or SMS.</p></div></div>
+        <div class="invite-how-row"><div class="invite-how-num">2</div><div class="invite-how-text"><h4>Friends register</h4><p>Each friend who signs up using your link counts as one referral. <strong style="color:var(--gold-light)">You earn +5 ETB instantly</strong> per confirmed registration.</p></div></div>
+        <div class="invite-how-row"><div class="invite-how-num">3</div><div class="invite-how-text"><h4>Withdrawal unlocks</h4><p>Once all 3 friends register, your 500 ETB withdrawal is automatically unlocked. You also receive a <strong style="color:var(--gold-light)">150 ETB milestone bonus</strong> on top of your +5 ETB per referral.</p></div></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- PROFILE SCREEN -->
+  <div class="screen hidden" id="screen-profile">
+    <div class="screen-content">
+      <div class="status-bar"><span class="status-time">9:41</span><div class="status-icons"><span>●●●</span><span>WiFi</span><span>🔋</span></div></div>
+      <div class="top-bar"><button class="top-bar-back" onclick="goTo('home')">←</button><div class="top-bar-title">Profile</div><div style="width:36px"></div></div>
+      <div class="profile-avatar-row">
+        <div class="profile-avatar" id="profileInitial">U</div>
+        <div class="profile-name" id="profileName">My Account</div>
+        <div class="profile-status">Active Member</div>
+      </div>
+      <div class="section-hd"><h3>Account Details</h3></div>
+      <div class="info-list-card">
+        <div class="info-row"><span class="info-row-lbl">Full Name</span><span class="info-row-val" id="profName">—</span></div>
+        <div class="info-row"><span class="info-row-lbl">Phone</span><span class="info-row-val" id="profPhone">—</span></div>
+        <div class="info-row"><span class="info-row-lbl">Member Since</span><span class="info-row-val" id="profJoined">—</span></div>
+        <div class="info-row"><span class="info-row-lbl">Referral Code</span><span class="info-row-val" id="profCode" style="color:var(--gold)">—</span></div>
+        <div class="info-row"><span class="info-row-lbl">Deposit</span><span class="info-row-val" id="profDepositStatus" style="color:#FF8C42">Not Deposited</span></div>
+        <div class="info-row"><span class="info-row-lbl">Referrals</span><span class="info-row-val"><span id="profRefCount">0</span> / 3</span></div>
+      </div>
+      <button class="profile-action-btn" onclick="openSheet('depositSheet')"><span>📱 Make a Deposit (Telebirr)</span><span>→</span></button>
+      <button class="profile-action-btn" onclick="openSheet('verifySheet')"><span>✅ Verify Identity</span><span>→</span></button>
+      <button class="profile-action-btn logout-btn" onclick="handleLogout()"><span>🚪 Log Out</span><span>→</span></button>
+    </div>
+  </div>
+
+  <!-- BOTTOM NAV -->
+  <nav id="bottom-nav">
+    <button class="nav-item active" id="nav-home" onclick="goTo('home')"><span class="nav-icon">🏠</span><span class="nav-label">Home</span></button>
+    <button class="nav-item" id="nav-withdraw" onclick="goTo('withdraw')"><span class="nav-icon-wrap"><span class="nav-icon">💸</span></span><span class="nav-label">Withdraw</span></button>
+    <button class="nav-item" id="nav-invite" onclick="goTo('invite')"><span class="nav-icon-wrap"><span class="nav-icon">👥</span><span class="nav-dot" id="inviteNavDot" style="display:none"></span></span><span class="nav-label">Invite</span></button>
+    <button class="nav-item" id="nav-profile" onclick="goTo('profile')"><span class="nav-icon">👤</span><span class="nav-label">Profile</span></button>
+  </nav>
+
+  <!-- ======= MODALS ======= -->
+
+  <!-- Welcome Bonus -->
+  <div class="modal-overlay" id="bonusSheet">
+    <div class="modal-sheet">
+      <div class="sheet-handle"></div>
+      <span class="modal-emoji">🎉</span>
+      <h2>Welcome, <span id="bonusName">Friend</span>!</h2>
+      <p>Your welcome bonus has been added to your wallet.</p>
+      <span class="big-num">200 ETB</span>
+      <p style="font-size:13px">Invite 3 friends and complete verification to unlock your full <strong style="color:var(--gold-light)">500 ETB</strong> payout.</p>
+      <button class="primary-btn" style="margin-top:16px" onclick="closeSheet('bonusSheet')">Go to Dashboard →</button>
+    </div>
+  </div>
+
+  <!-- Deposit Step 1: Bonus Offer -->
+  <div class="modal-overlay" id="depositSheet">
+    <div class="modal-sheet">
+      <div class="sheet-handle"></div>
+      <button class="sheet-close" onclick="closeSheet('depositSheet')">×</button>
+      <div class="step-pill-row"><div class="step-pill active"></div><div class="step-pill"></div><div class="step-pill"></div><div class="step-pill"></div></div>
+      <span class="modal-emoji">🎁</span>
+      <h2>Special Deposit Bonus!</h2>
+      <p style="font-size:14px;color:var(--muted);margin-bottom:12px">Deposit just <strong style="color:var(--gold-light)">100 ETB</strong> via <strong style="color:#4ECB71">Telebirr</strong> and receive a <strong style="color:var(--green)">+300 ETB</strong> bonus!</p>
+      <div style="background:rgba(39,174,96,0.08);border:1px solid rgba(39,174,96,0.25);border-radius:14px;padding:16px;margin:4px 0 16px;display:flex;flex-direction:column;gap:10px">
+        <div style="display:flex;justify-content:space-between;align-items:center"><span style="font-size:13px;color:var(--muted)">You Deposit via Telebirr</span><span style="font-family:'Syne',sans-serif;font-size:18px;font-weight:800;color:var(--text)">100 ETB</span></div>
+        <div style="height:1px;background:var(--border)"></div>
+        <div style="display:flex;justify-content:space-between;align-items:center"><span style="font-size:13px;color:var(--muted)">Bonus Added</span><span style="font-family:'Syne',sans-serif;font-size:18px;font-weight:800;color:var(--green)">+300 ETB 🎉</span></div>
+        <div style="height:1px;background:var(--border)"></div>
+        <div style="display:flex;justify-content:space-between;align-items:center"><span style="font-size:13px;color:var(--muted)">Total in Wallet</span><span style="font-family:'Syne',sans-serif;font-size:20px;font-weight:800;color:var(--gold-light)">500 ETB</span></div>
+      </div>
+      <button class="primary-btn" style="background:#27AE60" onclick="closeSheet('depositSheet'); setTimeout(()=>openSheet('depositTelebirrSheet'),200)">Claim Bonus → View Telebirr Details</button>
+      <button class="secondary-btn" onclick="closeSheet('depositSheet')">Not Now</button>
+    </div>
+  </div>
+
+  <!-- Deposit Step 2: Telebirr Details -->
+  <div class="modal-overlay" id="depositTelebirrSheet">
+    <div class="modal-sheet">
+      <div class="sheet-handle"></div>
+      <button class="sheet-close" onclick="closeSheet('depositTelebirrSheet')">×</button>
+      <div class="step-pill-row"><div class="step-pill done"></div><div class="step-pill active"></div><div class="step-pill"></div><div class="step-pill"></div></div>
+      <span class="modal-emoji">📱</span>
+      <h2>Send 100 ETB via Telebirr</h2>
+      <p style="font-size:13px;color:var(--muted);margin-bottom:14px">Transfer exactly <strong style="color:var(--gold-light)">100 ETB</strong> to the Telebirr number below. Your <strong style="color:var(--green)">300 ETB bonus</strong> will be confirmed by admin.</p>
+      <div class="telebirr-card">
+        <div class="telebirr-label-sm">📱 Admin Telebirr Account</div>
+        <div class="telebirr-detail-row"><span class="telebirr-detail-lbl">Service</span><span class="telebirr-detail-val" style="color:#4ECB71;font-weight:700">Telebirr (ቴሌብር)</span></div>
+        <div class="telebirr-detail-row"><span class="telebirr-detail-lbl">Account Name</span><span class="telebirr-detail-val" id="adminTelebirrName">IMX World Admin</span></div>
+        <div class="telebirr-detail-row"><span class="telebirr-detail-lbl">Amount</span><span class="telebirr-detail-val" style="color:var(--gold-light);font-weight:700">100 ETB</span></div>
+        <span class="telebirr-num" id="adminTelebirrNumber">0951339226</span>
+        <div class="copy-row"><button class="copy-btn-sm" onclick="copyTelebirr()">📋 Copy Number</button></div>
+      </div>
+      <div class="deposit-note">📌 Open Telebirr app → Send Money → Enter the number above → Send exactly 100 ETB. Then tap Next to upload your screenshot.</div>
+      <button class="primary-btn" style="margin-top:14px;background:#27AE60" onclick="closeSheet('depositTelebirrSheet'); setTimeout(()=>openSheet('depositScreenshotSheet'),200)">I've Sent the Payment ✓ Next →</button>
+      <button class="secondary-btn" onclick="closeSheet('depositTelebirrSheet'); setTimeout(()=>openSheet('depositSheet'),200)">← Back</button>
+    </div>
+  </div>
+
+  <!-- Deposit Step 3: Screenshot Upload -->
+  <div class="modal-overlay" id="depositScreenshotSheet">
+    <div class="modal-sheet">
+      <div class="sheet-handle"></div>
+      <button class="sheet-close" onclick="closeSheet('depositScreenshotSheet')">×</button>
+      <div class="step-pill-row"><div class="step-pill done"></div><div class="step-pill done"></div><div class="step-pill active"></div><div class="step-pill"></div></div>
+      <span class="modal-emoji">📸</span>
+      <h2>Attach Payment Screenshot</h2>
+      <p style="font-size:13px;color:var(--muted);margin-bottom:4px">Upload your Telebirr transfer confirmation screenshot so admin can verify your payment quickly.</p>
+
+      <div class="upload-zone" id="uploadZone" onclick="triggerFileInput()">
+        <img class="upload-preview" id="uploadPreview" src="" alt="Preview">
+        <span class="upload-icon" id="uploadIcon">📷</span>
+        <div class="upload-label" id="uploadLabel">Tap to Upload Screenshot</div>
+        <div class="upload-sublabel" id="uploadSublabel">PNG, JPG accepted • Max 10MB</div>
+        <div class="upload-filename" id="uploadFilename"></div>
+      </div>
+      <input type="file" id="screenshotInput" accept="image/*" onchange="handleScreenshotUpload(event)" style="display:none">
+
+      <div class="deposit-note">📌 Make sure your name, amount (100 ETB), date and Telebirr reference number are clearly visible.</div>
+      <button class="primary-btn" style="margin-top:14px;background:#27AE60" id="screenshotNextBtn" onclick="submitScreenshotToAdmin()" disabled>Send to Admin for Review →</button>
+      <button class="secondary-btn" onclick="closeSheet('depositScreenshotSheet'); setTimeout(()=>openSheet('depositTelebirrSheet'),200)">← Back</button>
+    </div>
+  </div>
+
+  <!-- Deposit Step 4: Waiting -->
+  <div class="modal-overlay" id="depositWaitSheet">
+    <div class="modal-sheet">
+      <div class="sheet-handle"></div>
+      <div class="step-pill-row"><div class="step-pill done"></div><div class="step-pill done"></div><div class="step-pill done"></div><div class="step-pill active"></div></div>
+      <span class="modal-emoji">⏳</span>
+      <h2>Screenshot Sent to Admin</h2>
+      <p style="font-size:14px;color:var(--muted);line-height:1.6">Your payment screenshot is being reviewed. Once confirmed, your <strong style="color:var(--green)">300 ETB bonus</strong> will be credited automatically.</p>
+      <div class="admin-review-panel">
+        <div class="admin-review-title">📋 Your Submission (Admin Viewing This)</div>
+        <img class="admin-review-img" id="adminReviewImg" src="" alt="Your screenshot">
+        <div class="admin-review-detail"><span>Submitted by</span><span id="adminReviewName">—</span></div>
+        <div class="admin-review-detail"><span>Phone</span><span id="adminReviewPhone">—</span></div>
+        <div class="admin-review-detail"><span>Amount</span><span style="color:var(--gold-light);font-weight:700">100 ETB</span></div>
+        <div class="admin-review-detail"><span>Payment Via</span><span style="color:#4ECB71;font-weight:700">Telebirr</span></div>
+        <div class="admin-review-detail"><span>Status</span><span style="color:#FF9A3C;font-weight:600;display:inline-flex;align-items:center;gap:5px"><span class="pulse-dot" style="background:#FF9A3C;flex-shrink:0"></span>Under Review</span></div>
+        <div class="admin-review-detail"><span>Submitted At</span><span id="adminReviewTime">—</span></div>
+      </div>
+      <div style="display:flex;align-items:center;gap:8px;background:rgba(39,174,96,0.08);border:1px solid rgba(39,174,96,0.2);border-radius:10px;padding:12px 14px;font-size:12px;color:#4ECB71;margin-bottom:12px"><span class="pulse-dot" style="background:#4ECB71;flex-shrink:0"></span>Pending admin confirmation… usually within 1–2 hours</div>
+      <button class="primary-btn" style="background:#27AE60" onclick="closeSheet('depositWaitSheet')">Got It — I'll Wait ✓</button>
+    </div>
+  </div>
+
+  <!-- Deposit Confirmed -->
+  <div class="modal-overlay" id="depositConfirmSheet">
+    <div class="modal-sheet">
+      <div class="sheet-handle"></div>
+      <span class="modal-emoji">🎉</span>
+      <h2>Payment Confirmed!</h2>
+      <p>Your Telebirr deposit has been verified by admin.</p>
+      <div style="background:rgba(29,185,84,0.08);border:1px solid rgba(29,185,84,0.25);border-radius:14px;padding:16px;margin:14px 0">
+        <div style="font-family:'Syne',sans-serif;font-size:40px;font-weight:800;color:var(--green);letter-spacing:-1px">+300 ETB</div>
+        <div style="font-size:12px;color:var(--muted);margin-top:4px">Added to your wallet by admin ✓</div>
+      </div>
+      <p style="font-size:13px;color:var(--gold-light);font-weight:600">🎯 Next Step: Invite 3 friends to unlock your withdrawal!</p>
+      <button class="primary-btn" style="margin-top:16px" onclick="closeSheet('depositConfirmSheet'); goTo('invite')">Go Invite Friends →</button>
+    </div>
+  </div>
+
+  <!-- Verify Sheet -->
+  <div class="modal-overlay" id="verifySheet">
+    <div class="modal-sheet">
+      <div class="sheet-handle"></div>
+      <button class="sheet-close" onclick="closeSheet('verifySheet')">×</button>
+      <span class="modal-emoji">✅</span>
+      <h2>Identity Verification</h2>
+      <p>Follow these 2 steps to unlock your 300 ETB verification reward.</p>
+      <div style="text-align:left;margin:16px 0;display:flex;flex-direction:column;gap:14px">
+        <div style="display:flex;gap:12px;align-items:flex-start"><div style="width:28px;height:28px;border-radius:50%;background:var(--gold-bg);border:1px solid var(--border-gold);display:flex;align-items:center;justify-content:center;font-family:'Syne',sans-serif;font-size:12px;font-weight:700;color:var(--gold);flex-shrink:0;margin-top:2px">1</div><div><div style="font-weight:600;font-size:14px;margin-bottom:3px">Join our Telegram Channel</div><div style="font-size:13px;color:var(--muted)">Join IMX World Official Telegram and take a screenshot showing you are a member.</div></div></div>
+        <div style="display:flex;gap:12px;align-items:flex-start"><div style="width:28px;height:28px;border-radius:50%;background:var(--gold-bg);border:1px solid var(--border-gold);display:flex;align-items:center;justify-content:center;font-family:'Syne',sans-serif;font-size:12px;font-weight:700;color:var(--gold);flex-shrink:0;margin-top:2px">2</div><div><div style="font-weight:600;font-size:14px;margin-bottom:3px">Upload Screenshot to Admin</div><div style="font-size:13px;color:var(--muted)">Deposit 100 ETB via Telebirr and upload the screenshot. Admin confirms within a few hours and credits your 300 ETB.</div></div></div>
+      </div>
+      <button class="primary-btn" onclick="closeSheet('verifySheet'); openSheet('depositSheet')">📱 Deposit via Telebirr to Verify →</button>
+      <button class="secondary-btn" onclick="closeSheet('verifySheet')">Later</button>
+    </div>
+  </div>
+
+  <!-- Task Sheet: Telegram -->
+  <div class="modal-overlay" id="taskSheet">
+    <div class="modal-sheet">
+      <div class="sheet-handle"></div>
+      <button class="sheet-close" onclick="closeSheet('taskSheet')">×</button>
+      <span class="modal-emoji">📋</span>
+      <h2>Daily Task</h2>
+      <p style="font-size:14px;color:var(--muted);line-height:1.6">Complete the task below to earn <strong style="color:var(--gold-light)">10 ETB</strong> instantly!</p>
+
+      <div id="taskNotDoneContent">
+        <div style="background:var(--surface2);border:1px solid rgba(0,136,204,0.3);border-radius:16px;padding:18px;margin:14px 0;text-align:left">
+          <div style="font-size:10px;letter-spacing:1.5px;text-transform:uppercase;color:#0088cc;font-weight:600;margin-bottom:12px;display:flex;align-items:center;gap:6px">📱 Telegram Task</div>
+          <div style="font-family:'Syne',sans-serif;font-size:15px;font-weight:700;margin-bottom:6px;color:var(--text)">Join IMX World Official Channel</div>
+          <div style="font-size:13px;color:var(--muted);line-height:1.6;margin-bottom:14px">Join our official Telegram channel to stay updated with announcements, payouts, and rewards.</div>
+          <a href="https://t.me/imxworldet" target="_blank" id="telegramJoinBtn" onclick="markTelegramClicked()" style="display:block;width:100%;background:#0088cc;color:#fff;font-family:'Syne',sans-serif;font-weight:800;font-size:14px;border:none;padding:13px;border-radius:11px;cursor:pointer;text-align:center;text-decoration:none;box-sizing:border-box">📲 Join Telegram Channel</a>
+        </div>
+        <div style="background:rgba(212,160,23,0.06);border:1px solid var(--border-gold);border-radius:12px;padding:12px 14px;font-size:12px;color:var(--gold);line-height:1.6;margin-bottom:14px" id="taskVerifyHint" style="display:none">✅ After joining, tap <strong>"Verify I Joined"</strong> below to claim your 10 ETB.</div>
+        <button class="primary-btn" id="taskVerifyBtn" onclick="verifyTelegramJoin()" style="display:none;background:var(--gold);color:#000">✅ Verify I Joined — Claim 10 ETB</button>
+      </div>
+
+      <div id="taskDoneContent" style="display:none">
+        <div style="background:rgba(29,185,84,0.08);border:1px solid rgba(29,185,84,0.25);border-radius:14px;padding:20px;margin:14px 0;text-align:center">
+          <div style="font-size:44px;margin-bottom:8px">✅</div>
+          <div style="font-family:'Syne',sans-serif;font-size:22px;font-weight:800;color:var(--green);letter-spacing:-1px">+10 ETB</div>
+          <div style="font-size:13px;color:var(--muted);margin-top:6px">Task completed! Reward added to your wallet.</div>
+        </div>
+        <button class="primary-btn" onclick="closeSheet('taskSheet')">Close</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Withdrawal Submitted Sheet -->
+  <div class="modal-overlay" id="withdrawSubmittedSheet">
+    <div class="modal-sheet">
+      <div class="sheet-handle"></div>
+      <span class="modal-emoji">📤</span>
+      <h2>Request Submitted!</h2>
+      <p>Your withdrawal of <strong style="color:var(--gold-light)">500 ETB</strong> has been submitted successfully.</p>
+      <div style="background:var(--surface2);border:1px solid var(--border);border-radius:14px;padding:16px;margin:16px 0;text-align:left">
+        <div style="font-size:12px;color:var(--muted);margin-bottom:6px">What happens next:</div>
+        <div style="font-size:13px;color:var(--text);line-height:1.8">⏳ Admin verifies your referrals<br>💰 Payment processed within 24 hours<br>📱 SMS confirmation sent once paid<br>📱 Funds arrive via Telebirr</div>
+      </div>
+      <button class="primary-btn" onclick="closeSheet('withdrawSubmittedSheet')">Got It ✓</button>
+    </div>
+  </div>
+
+  <div id="toast">Copied!</div>
+
+<!-- ══════════════════════════════════════════
+     ADMIN PANEL OVERLAY
+══════════════════════════════════════════ -->
+<div id="admin-overlay">
+
+  <!-- LOGIN SCREEN -->
+  <div id="admin-login">
+    <div class="admin-login-logo">IMX<span style="color:#fff">World</span></div>
+    <div class="admin-login-sub">Admin Panel</div>
+    <div class="admin-login-card">
+      <h2>🔐 Admin Access</h2>
+      <p>Enter your admin password to continue.</p>
+      <input class="admin-input" type="password" id="adminPwInput" placeholder="Admin password" onkeydown="if(event.key==='Enter')adminLogin()">
+      <button class="admin-login-btn" onclick="adminLogin()">Unlock Admin Panel →</button>
+      <div class="admin-login-err" id="adminLoginErr">❌ Incorrect password. Try again.</div>
+      <div style="margin-top:16px;text-align:center">
+        <button onclick="closeAdminPanel()" style="background:none;border:none;color:#444;font-size:12px;cursor:pointer;">← Back to User Site</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- DASHBOARD -->
+  <div id="admin-dashboard">
+    <div class="admin-topbar">
+      <div class="admin-topbar-logo">IMX<span style="color:#fff">World</span> <span>ADMIN</span></div>
+      <button class="admin-logout-btn" onclick="adminLogout()">Log Out</button>
+    </div>
+
+    <!-- Stats -->
+    <div class="admin-stats">
+      <div class="stat-card"><div class="stat-val" id="aStatUsers">0</div><div class="stat-lbl">Total Users</div></div>
+      <div class="stat-card"><div class="stat-val" id="aStatPendingDep">0</div><div class="stat-lbl">Pending Deposits</div></div>
+      <div class="stat-card"><div class="stat-val" id="aStatPendingWd">0</div><div class="stat-lbl">Pending Withdrawals</div></div>
+      <div class="stat-card"><div class="stat-val" id="aStatTasks">0</div><div class="stat-lbl">Task Completions</div></div>
+    </div>
+
+    <!-- Tabs -->
+    <div class="admin-tabs">
+      <button class="admin-tab active" onclick="switchAdminTab('deposits')" id="atab-deposits">💳 Deposits <span class="admin-tab-badge" id="badge-deposits" style="display:none">0</span></button>
+      <button class="admin-tab" onclick="switchAdminTab('withdrawals')" id="atab-withdrawals">💸 Withdrawals <span class="admin-tab-badge" id="badge-withdrawals" style="display:none">0</span></button>
+      <button class="admin-tab" onclick="switchAdminTab('users')" id="atab-users">👥 Users</button>
+      <button class="admin-tab" onclick="switchAdminTab('referrals')" id="atab-referrals">🔗 Referrals</button>
+      <button class="admin-tab" onclick="switchAdminTab('tasks')" id="atab-tasks">📋 Tasks</button>
+      <button class="admin-tab" onclick="switchAdminTab('settings')" id="atab-settings">⚙️ Settings</button>
+    </div>
+
+    <!-- DEPOSITS TAB -->
+    <div class="admin-section active" id="asec-deposits">
+      <div class="admin-section-title">Deposit Submissions <button class="admin-refresh-btn" onclick="renderAdminDeposits()">↻ Refresh</button></div>
+      <div id="adminDepositList"><div class="admin-empty">Loading...</div></div>
+    </div>
+
+    <!-- WITHDRAWALS TAB -->
+    <div class="admin-section" id="asec-withdrawals">
+      <div class="admin-section-title">Withdrawal Requests <button class="admin-refresh-btn" onclick="renderAdminWithdrawals()">↻ Refresh</button></div>
+      <div id="adminWithdrawalList"><div class="admin-empty">Loading...</div></div>
+    </div>
+
+    <!-- USERS TAB -->
+    <div class="admin-section" id="asec-users">
+      <div class="admin-section-title">Registered Users <button class="admin-refresh-btn" onclick="renderAdminUsers()">↻ Refresh</button></div>
+      <div id="adminUserList"><div class="admin-empty">Loading...</div></div>
+    </div>
+
+    <!-- REFERRALS TAB -->
+    <div class="admin-section" id="asec-referrals">
+      <div class="admin-section-title">Referral Activity <button class="admin-refresh-btn" onclick="renderAdminReferrals()">↻ Refresh</button></div>
+      <div id="adminReferralList"><div class="admin-empty">Loading...</div></div>
+    </div>
+
+    <!-- TASKS TAB -->
+    <div class="admin-section" id="asec-tasks">
+      <div class="admin-section-title">Task Completions <button class="admin-refresh-btn" onclick="renderAdminTasks()">↻ Refresh</button></div>
+      <div id="adminTaskList"><div class="admin-empty">Loading...</div></div>
+    </div>
+
+    <!-- SETTINGS TAB -->
+    <div class="admin-section" id="asec-settings">
+      <div style="padding-top:16px">
+
+        <div class="settings-card">
+          <h3>📱 Telebirr Details</h3>
+          <div class="settings-row">
+            <div class="settings-lbl">Telebirr Number</div>
+            <input class="settings-input" id="sTelebirrNum" placeholder="e.g. 0951339226">
+          </div>
+          <div class="settings-row">
+            <div class="settings-lbl">Account Name</div>
+            <input class="settings-input" id="sTelebirrName" placeholder="e.g. IMX World Admin">
+          </div>
+          <button class="settings-save-btn" onclick="saveAdminSettings()">Save Telebirr Details</button>
+        </div>
+
+        <div class="settings-card">
+          <h3>📢 Announcement Banner</h3>
+          <div class="settings-row">
+            <div class="settings-lbl">Message (shown to all users on Home)</div>
+            <textarea class="settings-input" id="sAnnouncement" rows="3" placeholder="e.g. System maintenance tonight 10PM–11PM. Payouts resume tomorrow."></textarea>
+          </div>
+          <button class="settings-save-btn" onclick="saveAdminSettings()">Save Announcement</button>
+        </div>
+
+        <div class="settings-card">
+          <h3>🔐 Change Admin Password</h3>
+          <div class="settings-row">
+            <div class="settings-lbl">Current Password</div>
+            <input class="settings-input" type="password" id="sCurPw" placeholder="Current password">
+          </div>
+          <div class="settings-row">
+            <div class="settings-lbl">New Password</div>
+            <input class="settings-input" type="password" id="sNewPw" placeholder="New password (min 6 chars)">
+          </div>
+          <div class="settings-row">
+            <div class="settings-lbl">Confirm New Password</div>
+            <input class="settings-input" type="password" id="sConfPw" placeholder="Repeat new password">
+          </div>
+          <button class="settings-save-btn" onclick="changeAdminPassword()">Change Password</button>
+          <div id="sPwMsg" style="font-size:12px;margin-top:10px;"></div>
+        </div>
+
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Image Viewer Modal -->
+<div id="adminImgModal" onclick="closeAdminImg()">
+  <div class="close-img" onclick="closeAdminImg()">×</div>
+  <img id="adminImgFull" src="" alt="Screenshot">
+</div>
+
+</div>
+
+<script>
+// ─── Storage Keys ───────────────────────────────────────
+const STORAGE_KEY = 'imx_user_data';
+const ADMIN_DATA_KEY = 'imx_admin_data';
+const SUBMISSIONS_KEY = 'imx_submissions';
+
+// ─── State ─────────────────────────────────────────────
+const state = {
+  registered: false,
+  name: '',
+  phone: '',
+  referralCode: '',
+  referralsCount: 0,
+  withdrawUnlocked: false,
+  withdrawalStatus: 'pending',
+  depositDone: false,
+  depositPending: false,
+  currentScreen: 'auth',
+  screenshotData: null,
+  userId: null
+};
+
+// ─── Load/Save State ────────────────────────────────────
+function saveState() {
+  localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+}
+
+function loadState() {
+  try {
+    const saved = localStorage.getItem(STORAGE_KEY);
+    if (saved) {
+      const data = JSON.parse(saved);
+      Object.assign(state, data);
+      return true;
+    }
+  } catch(e) {}
+  return false;
+}
+
+// ─── Get Admin Settings ─────────────────────────────────
+function getAdminSettings() {
+  try {
+    const d = localStorage.getItem(ADMIN_DATA_KEY);
+    return d ? JSON.parse(d) : {};
+  } catch(e) { return {}; }
+}
+
+// ─── Check Admin Updates ────────────────────────────────
+function checkAdminUpdates() {
+  const settings = getAdminSettings();
+  if (!state.userId) return;
+
+  const submissions = getSubmissions();
+
+  // Check deposit status
+  const myDeposit = submissions.find(s => s.userId === state.userId && s.type === 'deposit');
+  if (myDeposit) {
+    if (myDeposit.adminStatus === 'approved' && !state.depositDone) {
+      state.depositDone = true;
+      state.depositPending = false;
+      saveState();
+      if (state.currentScreen !== 'auth') {
+        updateWithdrawTracker();
+        updateInviteScreen();
+        updateHomeScreen();
+        showToast('✅ Admin confirmed your deposit! +300 ETB added');
+        openSheet('depositConfirmSheet');
+      }
+    } else if (myDeposit.adminStatus === 'rejected' && state.depositPending) {
+      state.depositPending = false;
+      saveState();
+      updateWithdrawTracker();
+      showToast('❌ Admin rejected your deposit. Please resubmit.');
+    }
+  }
+
+  // Check withdrawal status
+  const myWithdrawal = submissions.find(s => s.userId === state.userId && s.type === 'withdrawal');
+  if (myWithdrawal) {
+    if (myWithdrawal.adminStatus === 'sent' && state.withdrawalStatus !== 'sent') {
+      state.withdrawalStatus = 'sent';
+      saveState();
+      updateWithdrawTracker();
+      showToast('🎉 Payment sent! Check your Telebirr.');
+    } else if (myWithdrawal.adminStatus === 'processing' && state.withdrawalStatus === 'submitted') {
+      state.withdrawalStatus = 'processing';
+      saveState();
+      updateWithdrawTracker();
+    } else if (myWithdrawal.adminStatus === 'rejected' && state.withdrawalStatus !== 'rejected') {
+      state.withdrawalStatus = 'rejected';
+      saveState();
+      updateWithdrawTracker();
+      showToast('❌ Withdrawal rejected by admin. Contact support.');
+    }
+  }
+
+  // Sync referral count from submissions
+  const myReferrals = submissions.filter(s => s.type === 'referral' && s.inviterCode === state.referralCode);
+  if (myReferrals.length !== state.referralsCount) {
+    state.referralsCount = myReferrals.length;
+    state.withdrawUnlocked = state.depositDone && state.referralsCount >= 3;
+    saveState();
+    updateHomeScreen();
+    updateInviteScreen();
+    updateInviteNavDot();
+  }
+
+  // Announcement banner
+  const banner = document.getElementById('adminAnnouncementBanner');
+  if (settings.announcement && settings.announcement.trim()) {
+    banner.style.display = 'block';
+    banner.textContent = '📢 ' + settings.announcement;
+  } else {
+    banner.style.display = 'none';
+  }
+
+  // Update Telebirr number from admin settings
+  if (settings.telebirrNumber) {
+    document.getElementById('adminTelebirrNumber').textContent = settings.telebirrNumber;
+  }
+  if (settings.telebirrName) {
+    document.getElementById('adminTelebirrName').textContent = settings.telebirrName;
+  }
+
+  // Refresh task sheet content
+  renderTaskSheet();
+}
+
+function getSubmissions() {
+  try {
+    return JSON.parse(localStorage.getItem(SUBMISSIONS_KEY) || '[]');
+  } catch(e) { return []; }
+}
+
+function saveSubmission(submission) {
+  const subs = getSubmissions();
+  const idx = subs.findIndex(s => s.id === submission.id);
+  if (idx >= 0) subs[idx] = submission;
+  else subs.push(submission);
+  localStorage.setItem(SUBMISSIONS_KEY, JSON.stringify(subs));
+}
+
+// ─── Navigation ─────────────────────────────────────────
+function goTo(screen) {
+  document.querySelectorAll('.screen').forEach(s => s.classList.add('hidden'));
+  const target = document.getElementById('screen-' + screen);
+  if (target) { target.classList.remove('hidden'); target.scrollTop = 0; }
+  state.currentScreen = screen;
+  updateNavBar(screen);
+  if (screen === 'withdraw') { updateWithdrawTracker(); checkAdminUpdates(); }
+  if (screen === 'home') { updateHomeScreen(); checkAdminUpdates(); }
+  if (screen === 'profile') updateProfileScreen();
+  if (screen === 'invite') updateInviteScreen();
+}
+
+function updateNavBar(screen) {
+  document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+  const target = document.getElementById('nav-' + screen);
+  if (target) target.classList.add('active');
+}
+
+// ─── Auth ───────────────────────────────────────────────
+function setAuthMode(mode) {
+  document.getElementById('authFormRegister').style.display = mode === 'register' ? 'block' : 'none';
+  document.getElementById('authFormLogin').style.display = mode === 'login' ? 'block' : 'none';
+  document.getElementById('authTabRegister').classList.toggle('active', mode === 'register');
+  document.getElementById('authTabLogin').classList.toggle('active', mode === 'login');
+}
+
+function handleRegister() {
+  const name = document.getElementById('regName').value.trim();
+  const phone = document.getElementById('regPhone').value.trim();
+  const password = document.getElementById('regPassword').value.trim();
+  const referredBy = (document.getElementById('regReferralCode').value || '').trim().toUpperCase();
+  if (!name || !phone || !password) { showToast('Please fill in all fields'); return; }
+
+  // Strong password enforcement
+  if (password.length < 8) { showToast('⚠️ Password must be at least 8 characters'); return; }
+  if (!/[A-Z]/.test(password)) { showToast('⚠️ Password must include an uppercase letter'); return; }
+  if (!/[0-9]/.test(password)) { showToast('⚠️ Password must include a number'); return; }
+
+  // One phone number per account check
+  try {
+    const allPhones = JSON.parse(localStorage.getItem('imx_registered_phones') || '[]');
+    const norm = phone.replace(/\s+/g, '');
+    if (allPhones.includes(norm)) { showToast('⛔ An account already exists for this phone number'); return; }
+    allPhones.push(norm);
+    localStorage.setItem('imx_registered_phones', JSON.stringify(allPhones));
+  } catch(e) {}
+
+  state.registered = true;
+  state.name = name;
+  state.phone = phone;
+  state.referralCode = 'IMX' + Math.random().toString(36).substr(2,6).toUpperCase();
+  state.userId = 'user_' + Date.now();
+  state.referredBy = referredBy || null;
+  saveState();
+
+  // Credit 10 ETB referral bonus to inviter (logged for admin)
+  if (referredBy) {
+    saveSubmission({ id: 'ref_' + Date.now(), type: 'referral', newUserId: state.userId, newUserName: name, newUserPhone: phone, inviterCode: referredBy, bonusAmount: 5, submittedAt: new Date().toISOString(), adminStatus: 'pending' });
+  }
+
+  initUserUI();
+  showApp();
+  setTimeout(() => { document.getElementById('bonusName').textContent = name.split(' ')[0]; openSheet('bonusSheet'); }, 300);
+}
+
+function handleLogin() {
+  const phone = document.getElementById('loginPhone').value.trim();
+  const password = document.getElementById('loginPassword').value.trim();
+  if (!phone || !password) { showToast('Please fill in all fields'); return; }
+  state.registered = true;
+  state.name = state.name || 'User';
+  state.phone = phone;
+  if (!state.referralCode) state.referralCode = 'IMX' + Math.random().toString(36).substr(2,6).toUpperCase();
+  if (!state.userId) state.userId = 'user_' + Date.now();
+  saveState();
+  initUserUI();
+  showApp();
+}
+
+function initUserUI() {
+  const initial = state.name.charAt(0).toUpperCase();
+  document.getElementById('homeAvatar').textContent = initial;
+  document.getElementById('profileInitial').textContent = initial;
+  document.getElementById('profileName').textContent = state.name;
+  const link = 'https://imxworld.et/ref/' + state.referralCode;
+  document.getElementById('inviteLink').textContent = link;
+  checkAdminUpdates();
+}
+
+function showApp() {
+  document.getElementById('screen-auth').classList.add('hidden');
+  document.getElementById('bottom-nav').classList.add('visible');
+  state.currentScreen = 'home';
+  document.getElementById('screen-home').classList.remove('hidden');
+  updateHomeScreen();
+  updateNavBar('home');
+  updateInviteNavDot();
+}
+
+function handleLogout() {
+  const saved = JSON.parse(JSON.stringify(state));
+  Object.assign(state, { registered: false, name: '', phone: '', referralCode: '', referredBy: null, referralsCount: 0, withdrawUnlocked: false, withdrawalStatus: 'pending', depositDone: false, depositPending: false, currentScreen: 'auth', screenshotData: null });
+  saveState();
+  document.querySelectorAll('.screen').forEach(s => s.classList.add('hidden'));
+  document.getElementById('screen-auth').classList.remove('hidden');
+  document.getElementById('bottom-nav').classList.remove('visible');
+  ['regName','regPhone','regPassword','regReferralCode','loginPhone','loginPassword'].forEach(id => { const el = document.getElementById(id); if (el) el.value = ''; });
+}
+
+// ─── Home ───────────────────────────────────────────────
+function updateHomeScreen() {
+  const refBonus = state.referralsCount * 5;
+  const taskBonus = calcTaskBonus();
+  const baseBalance = 200 + (state.depositDone ? 300 : 0) + refBonus + taskBonus;
+  document.getElementById('homeBalance').textContent = baseBalance;
+
+  const refStatus = document.getElementById('homeReferralStatus');
+  const refChip = document.getElementById('homeReferralChip');
+  const notifTitle = document.getElementById('homeNotifTitle');
+  const notifBody = document.getElementById('homeNotifBody');
+  refStatus.textContent = state.referralsCount + ' / 3 invited';
+
+  if (refBonus > 0) {
+    refChip.textContent = '+' + refBonus + ' ETB';
+    refChip.style.color = 'var(--gold-light)';
+  } else {
+    refChip.textContent = '+0 ETB';
+    refChip.style.color = 'var(--muted2)';
+  }
+
+  if (state.withdrawUnlocked) {
+    document.getElementById('homeStepReferral').classList.remove('locked-step');
+    document.getElementById('homeStepWithdraw').classList.remove('locked-step');
+    notifTitle.textContent = '🎉 Withdrawal Unlocked!';
+    notifBody.textContent = "You've completed all steps. Go to Withdraw to claim your 500 ETB.";
+    document.querySelector('#homeNotif').style.borderColor = 'rgba(29,185,84,0.3)';
+  } else {
+    const remaining = 3 - state.referralsCount;
+    notifTitle.textContent = `Invite ${remaining} more friend${remaining !== 1 ? 's' : ''} to unlock withdrawal`;
+    notifBody.textContent = 'Share your referral link. Each friend earns you +5 ETB instantly and you need 3 to unlock your 500 ETB payout.';
+  }
+}
+
+// ─── Profile ────────────────────────────────────────────
+function updateProfileScreen() {
+  document.getElementById('profName').textContent = state.name || '—';
+  document.getElementById('profPhone').textContent = state.phone || '—';
+  document.getElementById('profCode').textContent = state.referralCode || '—';
+  document.getElementById('profRefCount').textContent = state.referralsCount;
+  document.getElementById('profJoined').textContent = new Date().toLocaleDateString('en-ET');
+  const depStatus = document.getElementById('profDepositStatus');
+  if (state.depositDone) { depStatus.textContent = '✅ Confirmed'; depStatus.style.color = 'var(--green)'; }
+  else if (state.depositPending) { depStatus.textContent = '⏳ Pending'; depStatus.style.color = 'var(--gold)'; }
+  else { depStatus.textContent = 'Not Deposited'; depStatus.style.color = '#FF8C42'; }
+}
+
+// ─── Invite ─────────────────────────────────────────────
+function updateInviteScreen() {
+  const link = 'https://imxworld.et/ref/' + state.referralCode;
+  document.getElementById('inviteLink').textContent = link;
+  document.getElementById('inviteRefCount').textContent = state.referralsCount;
+  const refBonus = state.referralsCount * 5;
+  const bonusEl = document.getElementById('inviteRefBonus');
+  if (bonusEl) bonusEl.textContent = '+' + refBonus + ' ETB';
+  for (let i = 1; i <= 3; i++) {
+    const dot = document.getElementById('bigRef' + i);
+    if (dot) { dot.classList.toggle('filled', i <= state.referralsCount); dot.textContent = i <= state.referralsCount ? '✓' : '👤'; }
+  }
+  // Referral sharing is always available — no deposit prerequisite
+  const lockedNotice = document.getElementById('inviteLockedNotice');
+  if (lockedNotice) lockedNotice.style.display = 'none';
+  const shareBtn = document.querySelector('#screen-invite .primary-btn');
+  const copyBtn = document.querySelector('#screen-invite .icon-btn');
+  if (shareBtn) { shareBtn.disabled = false; shareBtn.style.opacity = ''; }
+  if (copyBtn) { copyBtn.disabled = false; copyBtn.style.opacity = ''; }
+}
+
+function updateInviteNavDot() {
+  const dot = document.getElementById('inviteNavDot');
+  if (dot) dot.style.display = state.referralsCount < 3 ? 'block' : 'none';
+}
+
+// ─── Screenshot Upload (FIXED) ──────────────────────────
+function triggerFileInput() {
+  document.getElementById('screenshotInput').click();
+}
+
+function handleScreenshotUpload(event) {
+  const file = event.target.files[0];
+  if (!file) return;
+  if (file.size > 10 * 1024 * 1024) { showToast('File too large. Max 10MB.'); return; }
+  if (!file.type.startsWith('image/')) { showToast('Please select an image file.'); return; }
+
+  const reader = new FileReader();
+  reader.onload = function(e) {
+    state.screenshotData = e.target.result;
+    // Show preview
+    const preview = document.getElementById('uploadPreview');
+    preview.src = e.target.result;
+    preview.style.display = 'block';
+    document.getElementById('uploadIcon').style.display = 'none';
+    document.getElementById('uploadLabel').textContent = '✅ Screenshot Attached!';
+    document.getElementById('uploadLabel').style.color = 'var(--green)';
+    document.getElementById('uploadSublabel').style.display = 'none';
+    const fn = document.getElementById('uploadFilename');
+    fn.textContent = '📎 ' + file.name + ' (' + (file.size/1024).toFixed(1) + ' KB)';
+    fn.style.display = 'block';
+    document.getElementById('uploadZone').classList.add('has-file');
+    document.getElementById('screenshotNextBtn').disabled = false;
+    showToast('✅ Screenshot attached successfully!');
+  };
+  reader.readAsDataURL(file);
+}
+
+function submitScreenshotToAdmin() {
+  if (!state.screenshotData) { showToast('Please attach a screenshot first'); return; }
+  state.depositPending = true;
+  saveState();
+
+  // Save submission for admin
+  const submission = {
+    id: 'dep_' + Date.now(),
+    userId: state.userId,
+    type: 'deposit',
+    userName: state.name,
+    userPhone: state.phone,
+    amount: 100,
+    paymentMethod: 'Telebirr',
+    screenshotData: state.screenshotData,
+    submittedAt: new Date().toISOString(),
+    adminStatus: 'pending'
+  };
+  saveSubmission(submission);
+
+  // Show wait screen with info
+  document.getElementById('adminReviewImg').src = state.screenshotData;
+  document.getElementById('adminReviewImg').style.display = 'block';
+  document.getElementById('adminReviewName').textContent = state.name;
+  document.getElementById('adminReviewPhone').textContent = state.phone;
+  document.getElementById('adminReviewTime').textContent = new Date().toLocaleString();
+
+  closeSheet('depositScreenshotSheet');
+  setTimeout(() => openSheet('depositWaitSheet'), 200);
+  updateWithdrawTracker();
+  updateWithdrawDepositSection();
+}
+
+// ─── Withdraw ───────────────────────────────────────────
+function updateWithdrawDepositSection() {
+  const done = state.depositDone, pending = state.depositPending;
+  const doneCard = document.getElementById('withdrawDepositDoneCard');
+  const pendingCard = document.getElementById('withdrawDepositPendingCard');
+  const actionCard = document.getElementById('withdrawDepositActionCard');
+  if (doneCard) doneCard.style.display = done ? 'flex' : 'none';
+  if (pendingCard) pendingCard.style.display = (!done && pending) ? 'flex' : 'none';
+  if (actionCard) actionCard.style.display = (!done && !pending) ? 'block' : 'none';
+}
+
+function updateWithdrawTracker() {
+  updateWithdrawDepositSection();
+  const r = state.referralsCount, unlocked = state.withdrawUnlocked, status = state.withdrawalStatus, depositDone = state.depositDone;
+  const depositEl = document.getElementById('ts-deposit');
+  const doneCard = document.getElementById('tsDepositDoneCard');
+  const pendCard = document.getElementById('tsDepositPendingCard');
+  const actCard = document.getElementById('tsDepositActionCard');
+  if (depositDone) {
+    depositEl.className = 'tracker-step ts-done'; document.getElementById('tsDotDeposit').textContent = '✓';
+    if (doneCard) doneCard.style.display = 'flex'; if (pendCard) pendCard.style.display = 'none'; if (actCard) actCard.style.display = 'none';
+  } else if (state.depositPending) {
+    depositEl.className = 'tracker-step ts-active'; document.getElementById('tsDotDeposit').textContent = '⏳';
+    if (doneCard) doneCard.style.display = 'none'; if (pendCard) pendCard.style.display = 'block'; if (actCard) actCard.style.display = 'none';
+  } else {
+    depositEl.className = 'tracker-step ts-active'; document.getElementById('tsDotDeposit').textContent = '📱';
+    if (doneCard) doneCard.style.display = 'none'; if (pendCard) pendCard.style.display = 'none'; if (actCard) actCard.style.display = 'block';
+  }
+  const verifiedEl = document.getElementById('ts-verified');
+  verifiedEl.className = 'tracker-step ' + (depositDone ? 'ts-active' : 'ts-pending');
+  const refEl = document.getElementById('ts-referrals');
+  if (!depositDone) {
+    refEl.className = 'tracker-step ts-pending'; refEl.style.opacity = '0.3'; refEl.style.pointerEvents = 'none';
+    document.getElementById('tsDotRef').textContent = '🔒'; document.getElementById('tsBadgeRef').textContent = 'Locked — Confirm Deposit First';
+  } else {
+    refEl.style.opacity = ''; refEl.style.pointerEvents = '';
+    document.getElementById('tsRefCount').textContent = r;
+    for (let i = 1; i <= 3; i++) { const d = document.getElementById('refD' + i); if (d) d.classList.toggle('filled', i <= r); }
+    if (unlocked) { refEl.className = 'tracker-step ts-done'; document.getElementById('tsDotRef').textContent = '✓'; document.getElementById('tsBadgeRef').textContent = 'Completed'; }
+    else { refEl.className = 'tracker-step ts-pending'; document.getElementById('tsDotRef').textContent = '👥'; document.getElementById('tsBadgeRef').textContent = r + '/3 Done'; }
+  }
+  const submitEl = document.getElementById('ts-submitted');
+  if (status === 'submitted' || status === 'processing' || status === 'sent') { submitEl.className = 'tracker-step ts-done'; document.getElementById('tsDotSubmit').textContent = '✓'; document.getElementById('tsBadgeSubmit').textContent = 'Submitted'; }
+  else if (unlocked) { submitEl.className = 'tracker-step ts-active'; document.getElementById('tsDotSubmit').textContent = '📤'; document.getElementById('tsBadgeSubmit').textContent = 'Ready to Submit'; }
+  else { submitEl.className = 'tracker-step ts-pending'; document.getElementById('tsDotSubmit').textContent = '📤'; document.getElementById('tsBadgeSubmit').textContent = 'Waiting'; }
+  const procEl = document.getElementById('ts-processing');
+  if (status === 'processing' || status === 'sent') procEl.className = 'tracker-step ts-done';
+  else if (status === 'submitted') procEl.className = 'tracker-step ts-active';
+  else procEl.className = 'tracker-step ts-pending';
+  const paidEl = document.getElementById('ts-paid');
+  paidEl.className = status === 'sent' ? 'tracker-step ts-done' : 'tracker-step ts-pending';
+  const banner = document.getElementById('withdrawStatusBanner');
+  const btn = document.getElementById('withdrawBtn');
+  if (status === 'submitted' || status === 'processing') {
+    banner.className = 'unlock-banner'; banner.innerHTML = "⏳ Your withdrawal request is being processed by admin. You'll receive notification within 24 hours.";
+    btn.disabled = true; btn.textContent = 'Request Submitted ✓';
+  } else if (status === 'sent') {
+    banner.className = 'unlock-banner'; banner.innerHTML = '🎉 Payment sent to your Telebirr! Check your SMS for confirmation.';
+    btn.disabled = true; btn.textContent = 'Payment Sent ✓';
+  } else if (unlocked) {
+    banner.className = 'unlock-banner'; banner.innerHTML = '✅ All steps complete! Enter your Telebirr number and submit your withdrawal.';
+    btn.disabled = false; btn.textContent = 'Submit Withdrawal Request →';
+  } else {
+    banner.className = 'lock-banner';
+    const remaining = 3 - r;
+    if (!depositDone && !state.depositPending) banner.innerHTML = '🔒 Deposit 100 ETB via Telebirr to get a 300 ETB bonus and continue your verification.';
+    else if (!depositDone && state.depositPending) banner.innerHTML = '⏳ Your Telebirr deposit is awaiting admin confirmation. Referral step unlocks after confirmation.';
+    else banner.innerHTML = `🔒 Invite ${remaining} more friend${remaining !== 1 ? 's' : ''} to unlock your withdrawal.`;
+    btn.disabled = true; btn.textContent = 'Submit Withdrawal Request →';
+  }
+}
+
+function handleWithdraw() {
+  if (!state.withdrawUnlocked) return;
+  const telebirr = document.getElementById('withdrawTelebirr').value.trim();
+  const name = document.getElementById('withdrawName').value.trim();
+  if (!telebirr || !name) { showToast('Please fill in your Telebirr details'); return; }
+  state.withdrawalStatus = 'submitted';
+  saveState();
+  // Save withdrawal submission
+  saveSubmission({ id: 'wd_' + Date.now(), userId: state.userId, type: 'withdrawal', userName: state.name, userPhone: state.phone, telebirrPhone: telebirr, telebirrName: name, amount: 500, submittedAt: new Date().toISOString(), adminStatus: 'pending' });
+  updateWithdrawTracker();
+  openSheet('withdrawSubmittedSheet');
+}
+
+// ─── Telebirr Copy ──────────────────────────────────────
+function copyTelebirr() {
+  const settings = getAdminSettings();
+  const num = settings.telebirrNumber || document.getElementById('adminTelebirrNumber').textContent;
+  copyText(num, null);
+  showToast('📋 Telebirr number copied!');
+}
+
+// ─── Telegram Task (dynamic from admin tasks) ──────────
+function getAdminTasks() {
+  try { return JSON.parse(localStorage.getItem('imx_admin_tasks') || '[]'); } catch(e) { return []; }
+}
+
+function getCompletedTaskIds() {
+  const subs = getSubmissions();
+  return subs
+    .filter(s => (s.type === 'task_telegram' || s.type === 'task_completion') && s.userId === state.userId)
+    .map(s => s.taskId || 'legacy_tg');
+}
+
+function calcTaskBonus() {
+  const subs = getSubmissions();
+  return subs
+    .filter(s => (s.type === 'task_telegram' || s.type === 'task_completion') && s.userId === state.userId)
+    .reduce((sum, s) => sum + (s.bonusAmount || 10), 0);
+}
+
+function renderTaskSheet() {
+  const container = document.getElementById('taskNotDoneContent');
+  const doneContainer = document.getElementById('taskDoneContent');
+  if (!container) return;
+
+  const tasks = getAdminTasks().filter(t => t.active);
+  const completedIds = getCompletedTaskIds();
+
+  // Check legacy single telegram task done (backward compat)
+  if (state.telegramTaskDone && tasks.length === 0) {
+    container.style.display = 'none';
+    doneContainer.style.display = 'block';
+    return;
+  }
+
+  if (tasks.length === 0) {
+    // Fallback: show default hardcoded telegram task
+    container.innerHTML = `
+      <div style="background:var(--surface2);border:1px solid rgba(0,136,204,0.3);border-radius:16px;padding:18px;margin:14px 0;text-align:left">
+        <div style="font-size:10px;letter-spacing:1.5px;text-transform:uppercase;color:#0088cc;font-weight:600;margin-bottom:12px">📱 Telegram Task</div>
+        <div style="font-family:'Syne',sans-serif;font-size:15px;font-weight:700;margin-bottom:6px;color:var(--text)">Join IMX World Official Channel</div>
+        <div style="font-size:13px;color:var(--muted);line-height:1.6;margin-bottom:14px">Join our official Telegram channel to stay updated with announcements, payouts, and rewards.</div>
+        <a href="https://t.me/imxworldet" target="_blank" onclick="markTaskClicked('legacy_tg')" style="display:block;width:100%;background:#0088cc;color:#fff;font-family:'Syne',sans-serif;font-weight:800;font-size:14px;border:none;padding:13px;border-radius:11px;cursor:pointer;text-align:center;text-decoration:none;box-sizing:border-box">📲 Join Telegram Channel</a>
+      </div>
+      <div style="background:rgba(212,160,23,0.06);border:1px solid var(--border-gold);border-radius:12px;padding:12px 14px;font-size:12px;color:var(--gold);line-height:1.6;margin-bottom:14px;display:none" id="taskVerifyHint">✅ After joining, tap <strong>"Verify I Joined"</strong> below to claim your 10 ETB.</div>
+      <button class="primary-btn" id="taskVerifyBtn" onclick="verifyTask('legacy_tg', 10)" style="display:none;background:var(--gold);color:#000">✅ Verify I Joined — Claim 10 ETB</button>
+    `;
+    if (state.telegramTaskDone) {
+      container.style.display = 'none';
+      doneContainer.style.display = 'block';
+    } else {
+      if (state.telegramClicked) {
+        const hint = container.querySelector('#taskVerifyHint');
+        const btn = container.querySelector('#taskVerifyBtn');
+        if (hint) hint.style.display = 'block';
+        if (btn) btn.style.display = 'block';
+      }
+    }
+    return;
+  }
+
+  // Dynamic tasks from admin
+  const pending = tasks.filter(t => !completedIds.includes(t.id));
+  const done = tasks.filter(t => completedIds.includes(t.id));
+
+  if (pending.length === 0) {
+    container.style.display = 'none';
+    doneContainer.innerHTML = `
+      <div style="background:rgba(29,185,84,0.08);border:1px solid rgba(29,185,84,0.25);border-radius:14px;padding:20px;margin:14px 0;text-align:center">
+        <div style="font-size:44px;margin-bottom:8px">🏆</div>
+        <div style="font-family:'Syne',sans-serif;font-size:18px;font-weight:800;color:var(--green)">All Tasks Complete!</div>
+        <div style="font-size:13px;color:var(--muted);margin-top:6px">You've completed all available tasks. Check back later for new ones.</div>
+      </div>
+      <button class="primary-btn" onclick="closeSheet('taskSheet')">Close</button>
+    `;
+    doneContainer.style.display = 'block';
+    return;
+  }
+
+  container.style.display = 'block';
+  doneContainer.style.display = 'none';
+
+  const settings = getAdminSettings();
+
+  container.innerHTML = pending.map(task => {
+    const isTg = task.type === 'telegram_join' || task.type === 'telegram_follow';
+    const tgUrl = task.tgChannel
+      ? (task.tgChannel.startsWith('http') ? task.tgChannel : 'https://t.me/' + task.tgChannel.replace('@',''))
+      : (settings.tgChannel ? 'https://t.me/' + settings.tgChannel.replace('@','') : 'https://t.me/imxworldet');
+    const linkUrl = task.link || '#';
+    const accentColor = isTg ? '#0088cc' : task.type === 'watch_video' ? '#e74c3c' : task.type === 'visit_link' ? '#27AE60' : '#D4A017';
+
+    return `
+    <div style="background:var(--surface2);border:1px solid rgba(255,255,255,0.08);border-radius:16px;padding:18px;margin:10px 0;text-align:left" id="taskCard_${task.id}">
+      <div style="font-size:10px;letter-spacing:1.5px;text-transform:uppercase;color:${accentColor};font-weight:600;margin-bottom:10px;display:flex;align-items:center;gap:6px">${task.icon || '📋'} ${task.type.replace('_',' ')}</div>
+      <div style="font-family:'Syne',sans-serif;font-size:15px;font-weight:700;margin-bottom:6px;color:var(--text)">${task.title}</div>
+      ${task.description ? `<div style="font-size:13px;color:var(--muted);line-height:1.6;margin-bottom:14px">${task.description}</div>` : ''}
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px">
+        <span style="font-size:12px;color:var(--muted)">Reward</span>
+        <span style="font-family:'Syne',sans-serif;font-size:16px;font-weight:800;color:var(--gold-light)">+${task.reward} ETB</span>
+      </div>
+      ${isTg
+        ? `<a href="${tgUrl}" target="_blank" onclick="markTaskClicked('${task.id}')" style="display:block;width:100%;background:${accentColor};color:#fff;font-family:'Syne',sans-serif;font-weight:800;font-size:14px;padding:13px;border-radius:11px;cursor:pointer;text-align:center;text-decoration:none;box-sizing:border-box">📲 ${task.type === 'telegram_join' ? 'Join' : 'Follow'} Channel</a>`
+        : `<a href="${linkUrl}" target="_blank" onclick="markTaskClicked('${task.id}')" style="display:block;width:100%;background:${accentColor};color:#fff;font-family:'Syne',sans-serif;font-weight:800;font-size:14px;padding:13px;border-radius:11px;cursor:pointer;text-align:center;text-decoration:none;box-sizing:border-box">${task.icon || '🔗'} Open Task</a>`
+      }
+      <div style="background:rgba(212,160,23,0.06);border:1px solid var(--border-gold);border-radius:10px;padding:10px 12px;font-size:12px;color:var(--gold);line-height:1.6;margin-top:10px;display:none" id="taskHint_${task.id}">✅ Done? Tap <strong>Verify</strong> below to claim your reward.</div>
+      <button class="primary-btn" id="taskVerifyBtn_${task.id}" onclick="verifyTask('${task.id}', ${task.reward})" style="display:none;background:var(--gold);color:#000;margin-top:10px">✅ Verify & Claim ${task.reward} ETB</button>
+    </div>`;
+  }).join('') +
+  (done.length > 0 ? `<div style="margin-top:14px;font-size:12px;color:var(--muted);text-align:center">✅ ${done.length} task${done.length>1?'s':''} already completed</div>` : '');
+}
+
+function markTaskClicked(taskId) {
+  if (!state.clickedTasks) state.clickedTasks = {};
+  state.clickedTasks[taskId] = true;
+  state.telegramClicked = true; // backward compat
+  saveState();
+  setTimeout(() => {
+    const hint = document.getElementById('taskHint_' + taskId);
+    const btn = document.getElementById('taskVerifyBtn_' + taskId);
+    if (hint) hint.style.display = 'block';
+    if (btn) btn.style.display = 'block';
+    // legacy fallback
+    const legacyHint = document.getElementById('taskVerifyHint');
+    const legacyBtn = document.getElementById('taskVerifyBtn');
+    if (legacyHint) legacyHint.style.display = 'block';
+    if (legacyBtn) legacyBtn.style.display = 'block';
+  }, 3000);
+}
+
+function markTelegramClicked() {
+  markTaskClicked('legacy_tg');
+}
+
+function verifyTask(taskId, reward) {
+  const completedIds = getCompletedTaskIds();
+  if (completedIds.includes(taskId) || (taskId === 'legacy_tg' && state.telegramTaskDone)) {
+    showToast('✅ Task already completed!');
+    return;
+  }
+  if (!state.clickedTasks || !state.clickedTasks[taskId]) {
+    if (taskId !== 'legacy_tg' || !state.telegramClicked) {
+      showToast('⚠️ Please open the task link first!');
+      return;
+    }
+  }
+
+  // Mark completed
+  if (taskId === 'legacy_tg') {
+    state.telegramTaskDone = true;
+    state.telegramBonus = (state.telegramBonus || 0) + reward;
+  }
+  saveState();
+
+  // Save submission
+  saveSubmission({
+    id: 'task_' + Date.now(),
+    userId: state.userId,
+    taskId: taskId,
+    type: taskId === 'legacy_tg' ? 'task_telegram' : 'task_completion',
+    userName: state.name,
+    userPhone: state.phone,
+    bonusAmount: reward,
+    submittedAt: new Date().toISOString(),
+    adminStatus: 'auto_approved'
+  });
+
+  updateHomeScreen();
+  showToast('🎉 Verified! +' + reward + ' ETB added to your wallet!');
+
+  // Re-render the task sheet after short delay
+  setTimeout(() => renderTaskSheet(), 400);
+}
+
+function verifyTelegramJoin() {
+  verifyTask('legacy_tg', 10);
+}
+
+// ─── Sheets ─────────────────────────────────────────────
+function openSheet(id) {
+  const el = document.getElementById(id);
+  if (!el) return;
+  if (id === 'taskSheet') {
+    renderTaskSheet();
+  }
+  el.classList.add('active');
+}
+function closeSheet(id) { const el = document.getElementById(id); if (el) el.classList.remove('active'); }
+document.querySelectorAll('.modal-overlay').forEach(el => { el.addEventListener('click', e => { if (e.target === el) el.classList.remove('active'); }); });
+
+// ─── Copy ───────────────────────────────────────────────
+function copyLink() { const link = document.getElementById('inviteLink').textContent; copyText(link, null); showToast('Link copied!'); }
+function shareLink() {
+  const link = document.getElementById('inviteLink').textContent;
+  if (navigator.share) navigator.share({ title: 'IMX World — Earn 500 ETB Free!', text: 'Join IMX World and earn 500 ETB free! 🇪🇹', url: link });
+  else { copyText(link, null); showToast('Link copied to clipboard!'); }
+}
+function copyText(text, btn) {
+  if (navigator.clipboard) { navigator.clipboard.writeText(text).then(() => { if (btn) { const o = btn.textContent; btn.textContent = '✅'; setTimeout(() => btn.textContent = o, 1500); } }).catch(() => fallbackCopy(text)); }
+  else fallbackCopy(text);
+}
+function fallbackCopy(text) { const el = document.createElement('textarea'); el.value = text; document.body.appendChild(el); el.select(); document.execCommand('copy'); document.body.removeChild(el); }
+
+// ─── Toast ──────────────────────────────────────────────
+function showToast(msg) { const t = document.getElementById('toast'); t.textContent = msg; t.classList.add('show'); setTimeout(() => t.classList.remove('show'), 2200); }
+
+// ─── Clock ──────────────────────────────────────────────
+function updateTime() { const now = new Date(); const t = now.getHours().toString().padStart(2,'0') + ':' + now.getMinutes().toString().padStart(2,'0'); document.querySelectorAll('#statusTime, #statusTime2').forEach(el => { if(el) el.textContent = t; }); }
+updateTime();
+setInterval(updateTime, 30000);
+
+// ─── Poll for admin updates every 10 sec ────────────────
+setInterval(() => { if (state.registered && state.currentScreen !== 'auth') checkAdminUpdates(); }, 10000);
+
+// ─── Auto-login if state exists ─────────────────────────
+window.addEventListener('DOMContentLoaded', () => {
+  if (loadState() && state.registered) {
+    initUserUI();
+    showApp();
+    if (state.depositPending) updateWithdrawTracker();
+  }
+});
+
+// ═══════════════════════════════════════════════════════
+// ADMIN PANEL
+// ═══════════════════════════════════════════════════════
+const ADMIN_PW_KEY = 'imx_admin_pw';
+const ADMIN_SESSION_KEY = 'imx_admin_session';
+const DEFAULT_ADMIN_PW = 'IMXadmin2024';
+
+function getAdminPw() {
+  return localStorage.getItem(ADMIN_PW_KEY) || DEFAULT_ADMIN_PW;
+}
+
+function checkAdminHash() {
+  if (window.location.hash === '#admin') {
+    document.getElementById('admin-overlay').classList.add('active');
+    // Check if session still valid
+    if (sessionStorage.getItem(ADMIN_SESSION_KEY) === '1') {
+      showAdminDashboard();
+    }
+  }
+}
+
+function closeAdminPanel() {
+  document.getElementById('admin-overlay').classList.remove('active');
+  window.location.hash = '';
+}
+
+function adminLogin() {
+  const pw = document.getElementById('adminPwInput').value;
+  if (pw === getAdminPw()) {
+    sessionStorage.setItem(ADMIN_SESSION_KEY, '1');
+    document.getElementById('adminLoginErr').style.display = 'none';
+    document.getElementById('adminPwInput').value = '';
+    showAdminDashboard();
+  } else {
+    document.getElementById('adminLoginErr').style.display = 'block';
+    document.getElementById('adminPwInput').value = '';
+    document.getElementById('adminPwInput').focus();
+  }
+}
+
+function adminLogout() {
+  sessionStorage.removeItem(ADMIN_SESSION_KEY);
+  document.getElementById('admin-dashboard').style.display = 'none';
+  document.getElementById('admin-login').style.display = 'flex';
+}
+
+function showAdminDashboard() {
+  document.getElementById('admin-login').style.display = 'none';
+  document.getElementById('admin-dashboard').style.display = 'block';
+  loadAdminSettings();
+  renderAdminAll();
+}
+
+function renderAdminAll() {
+  renderAdminDeposits();
+  renderAdminWithdrawals();
+  renderAdminUsers();
+  renderAdminReferrals();
+  renderAdminTasks();
+  updateAdminStats();
+}
+
+function switchAdminTab(tab) {
+  document.querySelectorAll('.admin-tab').forEach(t => t.classList.remove('active'));
+  document.querySelectorAll('.admin-section').forEach(s => s.classList.remove('active'));
+  document.getElementById('atab-' + tab).classList.add('active');
+  document.getElementById('asec-' + tab).classList.add('active');
+  // Refresh current tab
+  if (tab === 'deposits') renderAdminDeposits();
+  if (tab === 'withdrawals') renderAdminWithdrawals();
+  if (tab === 'users') renderAdminUsers();
+  if (tab === 'referrals') renderAdminReferrals();
+  if (tab === 'tasks') renderAdminTasks();
+}
+
+function updateAdminStats() {
+  const subs = getSubmissions();
+  const phones = JSON.parse(localStorage.getItem('imx_registered_phones') || '[]');
+  const pendingDep = subs.filter(s => s.type === 'deposit' && s.adminStatus === 'pending').length;
+  const pendingWd = subs.filter(s => s.type === 'withdrawal' && s.adminStatus === 'pending').length;
+  const tasks = subs.filter(s => s.type === 'task_telegram').length;
+  document.getElementById('aStatUsers').textContent = phones.length;
+  document.getElementById('aStatPendingDep').textContent = pendingDep;
+  document.getElementById('aStatPendingWd').textContent = pendingWd;
+  document.getElementById('aStatTasks').textContent = tasks;
+
+  // Badges
+  const bd = document.getElementById('badge-deposits');
+  const bw = document.getElementById('badge-withdrawals');
+  bd.textContent = pendingDep; bd.style.display = pendingDep > 0 ? 'inline-block' : 'none';
+  bw.textContent = pendingWd; bw.style.display = pendingWd > 0 ? 'inline-block' : 'none';
+}
+
+function fmtDate(iso) {
+  if (!iso) return '—';
+  const d = new Date(iso);
+  return d.toLocaleDateString('en-GB', { day:'2-digit', month:'short', year:'numeric' }) + ' ' + d.toLocaleTimeString('en-GB', { hour:'2-digit', minute:'2-digit' });
+}
+
+// ── DEPOSITS ──────────────────────────────────────────
+function renderAdminDeposits() {
+  const subs = getSubmissions().filter(s => s.type === 'deposit').sort((a,b) => new Date(b.submittedAt) - new Date(a.submittedAt));
+  const el = document.getElementById('adminDepositList');
+  if (!subs.length) { el.innerHTML = '<div class="admin-empty">No deposit submissions yet.</div>'; return; }
+  el.innerHTML = '<div class="admin-card">' + subs.map(s => {
+    const statusPill = s.adminStatus === 'approved' ? '<span class="status-pill pill-approved">Approved</span>' :
+                       s.adminStatus === 'rejected' ? '<span class="status-pill pill-rejected">Rejected</span>' :
+                       '<span class="status-pill pill-pending">Pending</span>';
+    const actions = s.adminStatus === 'pending' ?
+      `<button class="btn-approve" onclick="adminApproveDeposit('${s.id}')">✓ Approve</button><button class="btn-reject" onclick="adminRejectDeposit('${s.id}')">✕ Reject</button>` :
+      statusPill;
+    const thumb = s.screenshotData ? `<img class="admin-img-thumb" src="${s.screenshotData}" onclick="viewAdminImg('${s.id}')" title="View screenshot">` : '<div style="width:60px;height:60px;border-radius:8px;background:#1a1a1a;display:flex;align-items:center;justify-content:center;font-size:20px;flex-shrink:0">📷</div>';
+    return `<div class="admin-card-row" id="dep-row-${s.id}">
+      ${thumb}
+      <div class="admin-card-main">
+        <div class="admin-card-name">${s.userName || '—'}</div>
+        <div class="admin-card-meta">
+          📱 <span>${s.userPhone || '—'}</span> &nbsp;·&nbsp; 💰 <span>100 ETB</span><br>
+          🕐 <span>${fmtDate(s.submittedAt)}</span>
+        </div>
+      </div>
+      <div class="admin-actions">${actions}</div>
+    </div>`;
+  }).join('') + '</div>';
+  updateAdminStats();
+}
+
+function adminApproveDeposit(id) {
+  const subs = getSubmissions();
+  const idx = subs.findIndex(s => s.id === id);
+  if (idx < 0) return;
+  subs[idx].adminStatus = 'approved';
+  localStorage.setItem(SUBMISSIONS_KEY, JSON.stringify(subs));
+  renderAdminDeposits();
+  adminShowToast('✅ Deposit approved! +300 ETB will credit to user.');
+}
+
+function adminRejectDeposit(id) {
+  const subs = getSubmissions();
+  const idx = subs.findIndex(s => s.id === id);
+  if (idx < 0) return;
+  subs[idx].adminStatus = 'rejected';
+  localStorage.setItem(SUBMISSIONS_KEY, JSON.stringify(subs));
+  renderAdminDeposits();
+  adminShowToast('❌ Deposit rejected.');
+}
+
+function viewAdminImg(id) {
+  const subs = getSubmissions();
+  const s = subs.find(s => s.id === id);
+  if (!s || !s.screenshotData) return;
+  document.getElementById('adminImgFull').src = s.screenshotData;
+  document.getElementById('adminImgModal').classList.add('active');
+}
+
+function closeAdminImg() {
+  document.getElementById('adminImgModal').classList.remove('active');
+}
+
+// ── WITHDRAWALS ──────────────────────────────────────
+function renderAdminWithdrawals() {
+  const subs = getSubmissions().filter(s => s.type === 'withdrawal').sort((a,b) => new Date(b.submittedAt) - new Date(a.submittedAt));
+  const el = document.getElementById('adminWithdrawalList');
+  if (!subs.length) { el.innerHTML = '<div class="admin-empty">No withdrawal requests yet.</div>'; return; }
+  el.innerHTML = '<div class="admin-card">' + subs.map(s => {
+    const statusPill = s.adminStatus === 'sent' ? '<span class="status-pill pill-sent">Paid ✓</span>' :
+                       s.adminStatus === 'processing' ? '<span class="status-pill pill-approved">Processing</span>' :
+                       s.adminStatus === 'rejected' ? '<span class="status-pill pill-rejected">Rejected</span>' :
+                       '<span class="status-pill pill-pending">Pending</span>';
+    const actions = s.adminStatus === 'pending' || s.adminStatus === 'processing' ?
+      `<button class="btn-paid" onclick="adminMarkPaid('${s.id}')">💸 Mark Paid</button><button class="btn-reject" onclick="adminRejectWithdrawal('${s.id}')">✕ Reject</button>` :
+      statusPill;
+    return `<div class="admin-card-row" id="wd-row-${s.id}">
+      <div class="admin-card-main">
+        <div class="admin-card-name">${s.userName || '—'}</div>
+        <div class="admin-card-meta">
+          📱 Telebirr: <span>${s.telebirrPhone || '—'}</span><br>
+          👤 Name: <span>${s.telebirrName || '—'}</span> &nbsp;·&nbsp; 💰 <span>500 ETB</span><br>
+          🕐 <span>${fmtDate(s.submittedAt)}</span>
+        </div>
+      </div>
+      <div class="admin-actions">${actions}</div>
+    </div>`;
+  }).join('') + '</div>';
+  updateAdminStats();
+}
+
+function adminMarkPaid(id) {
+  const subs = getSubmissions();
+  const idx = subs.findIndex(s => s.id === id);
+  if (idx < 0) return;
+  subs[idx].adminStatus = 'sent';
+  localStorage.setItem(SUBMISSIONS_KEY, JSON.stringify(subs));
+  renderAdminWithdrawals();
+  adminShowToast('💸 Marked as paid! User will see confirmation.');
+}
+
+function adminRejectWithdrawal(id) {
+  const subs = getSubmissions();
+  const idx = subs.findIndex(s => s.id === id);
+  if (idx < 0) return;
+  subs[idx].adminStatus = 'rejected';
+  localStorage.setItem(SUBMISSIONS_KEY, JSON.stringify(subs));
+  renderAdminWithdrawals();
+  adminShowToast('❌ Withdrawal rejected.');
+}
+
+// ── USERS ────────────────────────────────────────────
+function renderAdminUsers() {
+  const phones = JSON.parse(localStorage.getItem('imx_registered_phones') || '[]');
+  const el = document.getElementById('adminUserList');
+  if (!phones.length) { el.innerHTML = '<div class="admin-empty">No registered users yet.</div>'; return; }
+  el.innerHTML = '<div class="admin-card">' + phones.map((ph, i) => `
+    <div class="admin-card-row">
+      <div style="width:32px;height:32px;border-radius:50%;background:rgba(212,160,23,0.15);border:1px solid rgba(212,160,23,0.3);display:flex;align-items:center;justify-content:center;font-family:'Syne',sans-serif;font-weight:700;font-size:13px;color:#F5C842;flex-shrink:0">${i+1}</div>
+      <div class="admin-card-main">
+        <div class="admin-card-name">${ph}</div>
+        <div class="admin-card-meta">Registered user</div>
+      </div>
+      <span class="status-pill pill-approved">Active</span>
+    </div>`).join('') + '</div>';
+  updateAdminStats();
+}
+
+// ── REFERRALS ────────────────────────────────────────
+function renderAdminReferrals() {
+  const subs = getSubmissions().filter(s => s.type === 'referral').sort((a,b) => new Date(b.submittedAt) - new Date(a.submittedAt));
+  const el = document.getElementById('adminReferralList');
+  if (!subs.length) { el.innerHTML = '<div class="admin-empty">No referral activity yet.</div>'; return; }
+  el.innerHTML = '<div class="admin-card">' + subs.map(s => `
+    <div class="admin-card-row">
+      <div class="admin-card-main">
+        <div class="admin-card-name">${s.newUserName || '—'}</div>
+        <div class="admin-card-meta">
+          📱 <span>${s.newUserPhone || '—'}</span><br>
+          🔗 Invited by code: <span>${s.inviterCode || '—'}</span> &nbsp;·&nbsp; 💰 <span>+${s.bonusAmount || 5} ETB</span><br>
+          🕐 <span>${fmtDate(s.submittedAt)}</span>
+        </div>
+      </div>
+      <span class="status-pill pill-approved">Confirmed</span>
+    </div>`).join('') + '</div>';
+}
+
+// ── TASKS ────────────────────────────────────────────
+function renderAdminTasks() {
+  const subs = getSubmissions().filter(s => s.type === 'task_telegram' || s.type === 'task_completion').sort((a,b) => new Date(b.submittedAt) - new Date(a.submittedAt));
+  const adminTasks = JSON.parse(localStorage.getItem('imx_admin_tasks') || '[]');
+  const el = document.getElementById('adminTaskList');
+  if (!subs.length) { el.innerHTML = '<div class="admin-empty">No task completions yet.</div>'; return; }
+  el.innerHTML = '<div class="admin-card">' + subs.map(s => {
+    const task = adminTasks.find(t => t.id === s.taskId);
+    const taskName = task ? task.title : 'Telegram Channel Join';
+    const reward = s.bonusAmount || 10;
+    return `<div class="admin-card-row">
+      <div style="font-size:28px;flex-shrink:0">${task ? (task.icon || '📋') : '📋'}</div>
+      <div class="admin-card-main">
+        <div class="admin-card-name">${s.userName || '—'}</div>
+        <div class="admin-card-meta">
+          📱 <span>${s.userPhone || '—'}</span><br>
+          ✅ ${taskName} &nbsp;·&nbsp; 💰 <span>+${reward} ETB</span><br>
+          🕐 <span>${fmtDate(s.submittedAt)}</span>
+        </div>
+      </div>
+      <span class="status-pill pill-auto">Auto ✓</span>
+    </div>`;
+  }).join('') + '</div>';
+  updateAdminStats();
+}
+
+// ── SETTINGS ─────────────────────────────────────────
+function loadAdminSettings() {
+  const s = getAdminSettings();
+  if (s.telebirrNumber) document.getElementById('sTelebirrNum').value = s.telebirrNumber;
+  if (s.telebirrName) document.getElementById('sTelebirrName').value = s.telebirrName;
+  if (s.announcement) document.getElementById('sAnnouncement').value = s.announcement;
+}
+
+function saveAdminSettings() {
+  const cur = getAdminSettings();
+  cur.telebirrNumber = document.getElementById('sTelebirrNum').value.trim() || cur.telebirrNumber;
+  cur.telebirrName = document.getElementById('sTelebirrName').value.trim() || cur.telebirrName;
+  cur.announcement = document.getElementById('sAnnouncement').value.trim();
+  localStorage.setItem(ADMIN_DATA_KEY, JSON.stringify(cur));
+  // Also update visible Telebirr number in user UI if present
+  const tnEl = document.getElementById('adminTelebirrNumber');
+  const nameEl = document.getElementById('adminTelebirrName');
+  if (tnEl && cur.telebirrNumber) tnEl.textContent = cur.telebirrNumber;
+  if (nameEl && cur.telebirrName) nameEl.textContent = cur.telebirrName;
+  adminShowToast('✅ Settings saved!');
+}
+
+function changeAdminPassword() {
+  const cur = document.getElementById('sCurPw').value;
+  const nw = document.getElementById('sNewPw').value;
+  const cf = document.getElementById('sConfPw').value;
+  const msg = document.getElementById('sPwMsg');
+  if (cur !== getAdminPw()) { msg.style.color='#FF5050'; msg.textContent='❌ Current password is incorrect.'; return; }
+  if (nw.length < 6) { msg.style.color='#FF5050'; msg.textContent='❌ New password must be at least 6 characters.'; return; }
+  if (nw !== cf) { msg.style.color='#FF5050'; msg.textContent='❌ New passwords do not match.'; return; }
+  localStorage.setItem(ADMIN_PW_KEY, nw);
+  ['sCurPw','sNewPw','sConfPw'].forEach(id => document.getElementById(id).value = '');
+  msg.style.color='#1DB954'; msg.textContent='✅ Password changed successfully!';
+  setTimeout(() => msg.textContent='', 3000);
+}
+
+// Admin toast (separate from user toast)
+function adminShowToast(msg) {
+  let t = document.getElementById('adminToast');
+  if (!t) {
+    t = document.createElement('div');
+    t.id = 'adminToast';
+    t.style.cssText = 'position:fixed;bottom:30px;left:50%;transform:translateX(-50%) translateY(20px);background:#222;color:#F0EDE6;border:1px solid rgba(255,255,255,0.1);border-radius:100px;padding:10px 20px;font-size:13px;font-weight:500;opacity:0;transition:all 0.3s;white-space:nowrap;z-index:10001;pointer-events:none;';
+    document.body.appendChild(t);
+  }
+  t.textContent = msg;
+  t.style.opacity = '1'; t.style.transform = 'translateX(-50%) translateY(0)';
+  setTimeout(() => { t.style.opacity='0'; t.style.transform='translateX(-50%) translateY(20px)'; }, 2500);
+}
+
+// Listen for hash changes
+window.addEventListener('hashchange', checkAdminHash);
+window.addEventListener('DOMContentLoaded', checkAdminHash);
+
+</script>
+</body>
+</html>
